@@ -1,0 +1,41 @@
+# ── LazyVim / plugin dev scaffolding ──────────────────────────────
+tt.*
+.tests
+doc/tags
+debug
+.repro
+foo.*
+*.log
+data
+docs
+# ── Lockfile ──────────────────────────────────────────────────────
+# lazy-lock.json SÍ se versiona (pinea versiones de plugins). NO lo ignores.
+
+# ── Datos locales / runtime de Neovim (se regeneran solos) ────────
+# Por si alguien clona DENTRO de un dir que mezcle data:
+shada/
+*.shada
+sessions/
+undo/
+spell/
+view/
+
+# ── Config local de Claude Code (no es de nvim; filtra usuario) ───
+.claude/
+**/.claude/
+
+# ── Secrets / entornos locales (defensivo, por si algún día creas) ─
+.env
+.env.*
+*.local.json
+secrets.json
+http-client.env.json
+http-client.private.env.json
+
+# ── Basura de SO / editores ───────────────────────────────────────
+.DS_Store
+**/.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
