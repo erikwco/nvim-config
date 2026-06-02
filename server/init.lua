@@ -21,6 +21,10 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+-- ── Desactivar netrw (para que neo-tree maneje los directorios, no el viejo netrw)
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 -- ── Opciones ────────────────────────────────────────────────────────────────
 local opt = vim.opt
 opt.number = true
@@ -191,7 +195,9 @@ require("lazy").setup({
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     event = "VeryLazy",
-    opts = { options = { theme = "catppuccin", globalstatus = true } },
+    -- theme = "auto" sigue el colorscheme activo sin depender de un nombre fijo
+    -- (evita el warning "Theme catppuccin not found" por orden de carga).
+    opts = { options = { theme = "auto", globalstatus = true } },
   },
   {
     "folke/which-key.nvim",
@@ -202,6 +208,17 @@ require("lazy").setup({
   -- Config de lazy: sin checks de update molestos en un server
   checker = { enabled = false },
   change_detection = { notify = false },
+})
+
+-- ── Abrir neo-tree automáticamente al iniciar con un directorio ──────────────
+-- Hace que `nvim .` o `nvim /ruta/carpeta` muestre neo-tree en vez de netrw.
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    local arg = vim.fn.argv(0)
+    if type(arg) == "string" and arg ~= "" and vim.fn.isdirectory(arg) == 1 then
+      vim.cmd("Neotree current dir=" .. vim.fn.fnameescape(arg))
+    end
+  end,
 })
 
 -- ── Keymaps básicos ──────────────────────────────────────────────────────────
