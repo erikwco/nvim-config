@@ -4,6 +4,13 @@ return -- lazy.nvim
   -- 'nvim-telescope/telescope.nvim' or 'ibhagwan/fzf-lua' or 'folke/snacks.nvim'
   -- are highly recommended for a better experience
   dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim" },
+  -- Solo cargar si `dotnet` está disponible. En máquinas sin .NET instalado
+  -- (ej. un Linux donde solo editas web), easy-dotnet intentaría arrancar su
+  -- servidor RPC y falla con "Vim:E475: 'dotnet' is not executable".
+  -- Con esto, simplemente no se carga ahí (Mac/Linux con .NET cargan normal).
+  cond = function()
+    return vim.fn.executable("dotnet") == 1
+  end,
   -- Carga al arrancar nvim para que :Dotnet, :Secrets, etc estén disponibles desde el inicio.
   -- Sin esto, el plugin queda lazy y el primer :Dotnet falla con E492.
   event = "VeryLazy",
