@@ -8,7 +8,7 @@
 -- INSTALAR EN EL SERVER (una línea, desde este repo):
 --   mkdir -p ~/.config/nvim
 --   curl -fLo ~/.config/nvim/init.lua \
---     https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/server/init.lua
+--     https://raw.githubusercontent.com/erikwco/nvim-config/main/server/init.lua
 --   nvim   # lazy.nvim se bootstrappea e instala los plugins
 --
 -- Requisitos en el server:

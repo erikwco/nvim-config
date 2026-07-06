@@ -8,6 +8,19 @@
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 --
 
+-- ── Desactivar spell check en markdown/docs ─────────────────────────────────
+-- LazyVim activa `spell` (en inglés) para markdown/text/gitcommit. En docs
+-- técnicos en español que mezclan nombres de productos (Traefik, CrowdSec...),
+-- el corrector marca casi todo en rojo y estorba más de lo que ayuda.
+-- Se mantiene `wrap` (útil para prosa), solo se apaga `spell`.
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("disable_spell_docs", { clear = true }),
+  pattern = { "markdown", "text", "gitcommit" },
+  callback = function()
+    vim.opt_local.spell = false
+  end,
+})
+
 -- vim.api.nvim_create_autocmd("LspAttach", {
 --   callback = function(args)
 --     local client = vim.lsp.get_client_by_id(args.data.client_id)

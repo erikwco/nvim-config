@@ -68,7 +68,7 @@ APIs. Runs on **macOS and Linux**.
 > ⚠️ Back up any existing config first: `mv ~/.config/nvim ~/.config/nvim.bak`
 
 ```bash
-git clone https://github.com/<YOUR_USERNAME>/<REPO>.git ~/.config/nvim
+git clone https://github.com/erikwco/nvim-config.git ~/.config/nvim
 nvim
 ```
 
@@ -91,9 +91,18 @@ brew install --cask font-jetbrains-mono-nerd-font
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt install -y neovim git curl ripgrep fd-find build-essential unzip nodejs npm
-# If apt's neovim is < 0.10:
-sudo add-apt-repository ppa:neovim-ppa/unstable -y && sudo apt update && sudo apt install -y neovim
+# System deps
+sudo apt install -y git curl ripgrep fd-find build-essential unzip nodejs npm
+
+# Neovim: use the OFFICIAL tarball, NOT apt/snap.
+# apt/snap link against the system's old LuaJIT (2.1.0-beta3) which lacks
+# `string.buffer`, breaking Snacks/LazyVim. The tarball bundles a modern LuaJIT.
+cd /tmp
+curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+sudo rm -rf /opt/nvim-linux-x86_64
+sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
+sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
+# (use nvim-linux-arm64.tar.gz on ARM machines)
 ```
 
 ---

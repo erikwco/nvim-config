@@ -1,0 +1,75 @@
+### Ejemplo de archivo .http para kulala (LazyVim rest extra).
+### Pon este tipo de archivo en la raíz de tus proyectos .NET (al lado del .csproj)
+### y úsalo para probar tu API/servicios externos como reemplazo de Postman.
+###
+### Sintaxis:
+###   - "###" separa peticiones distintas
+###   - "@var = valor" declara variables (reusables con {{var}})
+###   - Headers van entre la línea de METHOD url y el body
+###   - El body va separado por una línea en blanco
+###
+### Atajos clave (cursor sobre la petición):
+###   <leader>Rs  → enviar request
+###   <leader>Re  → cambiar entorno (Dev/QA/Prod)
+###   <leader>Rn  → siguiente request
+###   <leader>Rp  → anterior request
+###   <leader>Rc  → copiar como cURL
+###
+### Para entornos, crea un archivo http-client.env.json en el mismo dir con:
+### {
+###   "Dev":  { "BASE_URL": "http://sap-qa.example.com:8005", "USER": "u1", "PASS": "p1" },
+###   "Prod": { "BASE_URL": "https://sap-prod.example.com",         "USER": "u2", "PASS": "p2" }
+### }
+
+@base = http://sap-qa.example.com:8005
+@sap_path = /sap/bc/srt/scs/sap
+
+###
+# Health check de tu propia API ASP.NET
+GET http://localhost:5000/health
+
+###
+# Llamada SOAP a SAP — equivalente a lo que hace tu SapService
+POST {{base}}{{sap_path}}/Z05RTPWS_0090
+Content-Type: text/xml; charset=utf-8
+SOAPAction: urn:sap-com:document:sap:rfc:functions:Z05RTPWS_0090:Z05RTPMF_0090_EXISTENCIASRequest
+Authorization: Basic {{$base64 USER:PASS}}
+
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:urn="urn:sap-com:document:sap:rfc:functions">
+  <soap:Body>
+    <urn:Z05RTPMF_0090_EXISTENCIAS>
+      <I_PARAM1>VALOR_TEST</I_PARAM1>
+    </urn:Z05RTPMF_0090_EXISTENCIAS>
+  </soap:Body>
+</soap:Envelope>
+
+###
+# Ejemplo de petición JSON normal
+POST http://localhost:5000/AvdOperations/v1/Ping
+Content-Type: application/json
+
+{
+  "Usuario": "testuser",
+  "Mensaje": "Hello world"
+}
+
+###
+# Petición con variable extraída de una respuesta anterior:
+# El "@name token" guarda el resultado y puedes usarlo en peticiones siguientes
+# con {{token.response.body.access_token}}
+
+# @name login
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "secret"
+}
+
+###
+# Esta petición usa el token de la anterior
+GET http://localhost:5000/admin/users
+Authorization: Bearer {{login.response.body.access_token}}

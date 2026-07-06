@@ -65,7 +65,7 @@ ldd "$(which nvim)" | grep -i luajit # debe salir VACÍO (LuaJIT embebido)
 ```bash
 mkdir -p ~/.config/nvim
 curl -fLo ~/.config/nvim/init.lua \
-  https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/server/init.lua
+  https://raw.githubusercontent.com/erikwco/nvim-config/main/server/init.lua
 ```
 
 ### 4. Abrir

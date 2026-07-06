@@ -7,7 +7,7 @@ debug
 foo.*
 *.log
 data
-docs
+# docs/ se versiona (contiene el cheatsheet y ejemplos públicos)
 # ── Lockfile ──────────────────────────────────────────────────────
 # lazy-lock.json SÍ se versiona (pinea versiones de plugins). NO lo ignores.
 
