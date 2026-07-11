@@ -65,6 +65,7 @@ vim.opt.smarttab = true -- <Tab> al inicio de línea respeta shiftwidth
 
 -- Overrides por filetype donde la convención de la comunidad es 2:
 --   - JS/TS/JSON/HTML/CSS/YAML/Lua → 2 espacios (prettier/stylua defaults)
+--   - Dart → 2 espacios (convención oficial de `dart format` / Flutter)
 --   - Go → tabs reales (gofumpt usa tabs, no espacios; mantenemos expandtab=false)
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup("indent_overrides", { clear = true }),
@@ -80,6 +81,7 @@ vim.api.nvim_create_autocmd("FileType", {
     "scss",
     "yaml",
     "lua",
+    "dart",
   },
   callback = function()
     vim.bo.tabstop = 2

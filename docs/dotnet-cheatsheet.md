@@ -14,18 +14,19 @@
 5. [Terminales](#-terminales)
 6. [REST Client (kulala — .http files)](#-rest-client-kulala--http-files)
 7. [Database (vim-dadbod-ui)](#️-database-vim-dadbod-ui)
-8. [Build / Run / Test / Watch](#️-build--run--test--watch)
-9. [Publish multi-plataforma](#-publish-multi-plataforma)
-10. [Debug (DAP + netcoredbg)](#-debug-dap--netcoredbg)
-11. [Tests](#-tests)
-12. [Operaciones de proyecto y paquetes NuGet](#-operaciones-de-proyecto-y-paquetes-nuget)
-13. [Comandos de Roslyn LSP](#-comandos-de-roslyn-lsp)
-14. [User Secrets](#-user-secrets)
-15. [Formato (csharpier)](#-formato-csharpier)
-16. [Workflows típicos](#-workflows-típicos)
-17. [Troubleshooting](#-troubleshooting)
-18. [Convenciones de teclas](#️-convenciones-de-teclas)
-19. [Archivos de configuración](#-archivos-de-configuración)
+8. [Flutter / Dart](#-flutter--dart)
+9. [Build / Run / Test / Watch](#️-build--run--test--watch)
+10. [Publish multi-plataforma](#-publish-multi-plataforma)
+11. [Debug (DAP + netcoredbg)](#-debug-dap--netcoredbg)
+12. [Tests](#-tests)
+13. [Operaciones de proyecto y paquetes NuGet](#-operaciones-de-proyecto-y-paquetes-nuget)
+14. [Comandos de Roslyn LSP](#-comandos-de-roslyn-lsp)
+15. [User Secrets](#-user-secrets)
+16. [Formato (csharpier)](#-formato-csharpier)
+17. [Workflows típicos](#-workflows-típicos)
+18. [Troubleshooting](#-troubleshooting)
+19. [Convenciones de teclas](#️-convenciones-de-teclas)
+20. [Archivos de configuración](#-archivos-de-configuración)
 
 ---
 
@@ -544,6 +545,80 @@ La extra de LazyVim también instala `sqlfluff` (vía Mason) que da:
 4. **Ver el SQL de un procedure/package** (Oracle, PostgreSQL functions): expandes el nodo del árbol y Enter sobre el objeto — te muestra el source.
 
 5. **Cambiar de conexión sin reiniciar**: en el árbol, doble-click (o Enter) sobre otra conexión, te pasa a esa.
+
+---
+
+## 📱 Flutter / Dart
+
+Desarrollo Flutter dentro de Neovim vía **flutter-tools.nvim** (maneja el Dart LSP,
+hot reload, devices, dev log, outline de widgets). SDK en `~/Apps/flutter`.
+
+Provisto por [flutter.lua](../lua/plugins/flutter.lua). Prefix: `<leader>F*` (Flutter).
+Los atajos solo activan en buffers `.dart`.
+
+### Requisitos
+
+- **Flutter SDK** en `~/Apps/flutter` (incluye Dart + el LSP; no se instala por Mason)
+- Según target: Xcode (iOS/macOS), Android Studio + SDK (Android), Chrome (web)
+- **NO** activar el extra `lang.dart` de LazyVim → duplicaría el LSP
+
+### Atajos (`<leader>F*`, en `.dart`)
+
+| Tecla | Comando | Acción |
+|---|---|---|
+| `<leader>Fr` | `:FlutterRun` | **Run** la app (elige device) |
+| `<leader>Fl` | `:FlutterReload` | **Hot Reload** |
+| `<leader>FR` | `:FlutterRestart` | **Hot Restart** |
+| `<leader>Fq` | `:FlutterQuit` | Detener la app |
+| `<leader>Fd` | `:FlutterDevices` | Elegir device (iOS/Android/Chrome/macOS) |
+| `<leader>Fe` | `:FlutterEmulators` | Elegir/lanzar emulador |
+| `<leader>Fa` | `:FlutterAttach` | Attach a una app ya corriendo |
+| `<leader>Fp` | `:FlutterLogToggle` | **Mostrar/ocultar el panel de dev log** (recuperarlo si lo cerraste) |
+| `<leader>Fc` | `:FlutterLogClear` | Limpiar el dev log |
+| `<leader>Fo` | `:FlutterOutlineToggle` | Árbol de widgets (outline) |
+| `<leader>FD` | `:FlutterDevTools` | Abrir DevTools |
+| `<leader>Fg` | `:FlutterPubGet` | `flutter pub get` |
+| `<leader>Fu` | `:FlutterPubUpgrade` | `flutter pub upgrade` |
+| `<leader>Fs` | `:FlutterSuper` | Ir a la superclass |
+| `<leader>Fb` | `:FlutterToggleBrightness` | Toggle light/dark en el device |
+
+### Comandos útiles sin keymap (`:Flutter*`)
+
+| Comando | Acción |
+|---|---|
+| `:FlutterDebug` | Correr con el debugger (DAP) adjunto |
+| `:FlutterRename` | Renombrar símbolo/archivo (con imports) |
+| `:FlutterInspectWidget` | Inspeccionar el widget bajo el cursor |
+| `:FlutterVisualDebug` | Toggle overlay de debug visual (bordes de widgets) |
+| `:FlutterChangeTargetPlatform` | Cambiar plataforma target |
+| `:FlutterLspRestart` | Reiniciar el Dart LSP (si algo se traba) |
+| `:FlutterReanalyze` | Forzar re-análisis del proyecto |
+
+### El panel de dev log
+
+Al hacer `<leader>Fr`, se abre un split abajo con la salida de `flutter run`
+(prints, errores, estado del hot reload). Si lo cierras (`:q` o `<C-w>c`), **la app
+sigue corriendo** — solo ocultaste la ventana. Para recuperarlo:
+
+```vim
+:FlutterLogToggle     " o <leader>Fp
+```
+
+### Flujo típico
+
+1. `nvim` en tu proyecto Flutter (con `pubspec.yaml`)
+2. Abre `lib/main.dart` → el LSP indexa (unos segundos)
+3. `<leader>Fd` → elige device (Chrome = lo más rápido para probar)
+4. `<leader>Fr` → corre la app; se abre el dev log abajo
+5. Editas + guardas → **hot reload automático**
+6. `<leader>FR` si necesitas hot restart (cambios de estado/main)
+7. `<leader>Fq` para detener
+
+### Indentación y otros
+
+- Dart usa **2 espacios** (configurado; `dart format` lo confirma al guardar)
+- Autocompletado, hover, diagnósticos vía el Dart LSP (integrado con blink.cmp)
+- Formato al guardar vía dartls
 
 ---
 
@@ -1158,6 +1233,7 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
   - `<leader>D` → terminal lateral (panel a la derecha vía Snacks)
   - `<leader>R*` → **R**EST client (kulala, en `.http`)
   - `<leader>Q*` → **Q**uery / Database (vim-dadbod-ui)
+  - `<leader>F*` → **F**lutter (flutter-tools, en `.dart`)
   - `<leader>x*` → diagnósticos / quickfix (Trouble)
   - `<leader>j*` → **J**ava (JDTLS)
   - `<leader>m*` → **M**aven
@@ -1183,8 +1259,12 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
 | [`lua/plugins/debug.lua`](../lua/plugins/debug.lua) | DAP genérico (signs, highlights, UI layout) |
 | [`lua/plugins/diagnostics-loud.lua`](../lua/plugins/diagnostics-loud.lua) | Virtual text + signs + colores + auto-float |
 | [`lua/plugins/ufo.lua`](../lua/plugins/ufo.lua) | nvim-ufo: folds con info LSP + peek (`zK`) |
-| [`lua/config/autocmds.lua`](../lua/config/autocmds.lua) | `preserve_blank_indent` + `auto_view` (persistencia de folds/cursor) |
-| [`lua/config/options.lua`](../lua/config/options.lua) | Indentación, folds, listchars, NormalFloat con bg sólido |
+| [`lua/plugins/flutter.lua`](../lua/plugins/flutter.lua) | flutter-tools: Dart LSP + run/hot-reload/devices/dev-log |
+| [`lua/plugins/signature.lua`](../lua/plugins/signature.lua) | Signature help compacto (blink) que no tapa el texto |
+| [`lua/plugins/noice-quiet.lua`](../lua/plugins/noice-quiet.lua) | Silencia el spam de progreso LSP (jdtls) |
+| [`lua/config/autocmds.lua`](../lua/config/autocmds.lua) | `preserve_blank_indent` + `auto_view` (folds/cursor) + spell off en docs |
+| [`lua/config/options.lua`](../lua/config/options.lua) | Indentación (Dart=2), folds, listchars, NormalFloat bg sólido |
+| [`scripts/gen-eclipse-classpath.sh`](../scripts/gen-eclipse-classpath.sh) | Genera `.classpath`/`.project` para proyectos IntelliJ legacy (JDTLS) |
 | LazyVim extra `lang.dotnet` | csharpier, netcoredbg adapter base, treesitter c_sharp, neotest-vstest |
 
 ---
