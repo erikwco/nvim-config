@@ -1,7 +1,9 @@
-# .NET Core / .NET 8+ en Neovim — Cheatsheet
+# Neovim Dev Cheatsheet — C# · Go · Java · React/TS · Rust · Flutter
 
-> Setup: LazyVim + Roslyn LSP (`seblyng/roslyn.nvim`) + easy-dotnet + netcoredbg + csharpier + neotest-vstest.
-> Última actualización: 2026-05-25.
+> Referencia de mi config LazyVim: LSP, debug, tests, folds, terminales, REST,
+> DB, Flutter y más. Setup base: Roslyn/gopls/JDTLS/dartls/rust-analyzer +
+> easy-dotnet + kulala + vim-dadbod + nvim-ufo.
+> Última actualización: 2026-07-11.
 
 ---
 

@@ -1,4 +1,4 @@
-# 💤 Neovim config — polyglot dev (C# · Go · Java · React/TS · Rust)
+# 💤 Neovim config — polyglot dev (C# · Go · Java · React/TS · Rust · Flutter)
 
 A [LazyVim](https://github.com/LazyVim/LazyVim)-based Neovim setup tuned for
 **full-stack, multi-language development** with first-class LSP, debugging (DAP),
@@ -6,11 +6,11 @@ testing, formatting, and a few quality-of-life extras (REST client, DB browser,
 persistent folds).
 
 Built and refined for real day-to-day work across **.NET Core, Go, Java/Spring,
-React (TypeScript), and Rust**, with lighter support for Oracle/PL-SQL and HTTP
-APIs. Runs on **macOS and Linux**.
+React (TypeScript), Rust, and Flutter/Dart**, with lighter support for
+Oracle/PL-SQL and HTTP APIs. Runs on **macOS and Linux**.
 
 > 📓 A full, day-to-day **cheatsheet** lives in
-> [`docs/dotnet-cheatsheet.md`](docs/dotnet-cheatsheet.md) — keymaps, workflows,
+> [`docs/nvim-cheatsheet.md`](docs/nvim-cheatsheet.md) — keymaps, workflows,
 > and troubleshooting for every language and tool below.
 
 ---
@@ -26,6 +26,7 @@ APIs. Runs on **macOS and Linux**.
 | **Java** | JDTLS + Lombok, multi-JDK (8/11/17/21) | java-debug + vscode-java-test | neotest-java | google-java-format |
 | **React / TS / JS** | vtsls | js-debug (Node, Jest, Vitest, Chrome) | — | prettier + eslint |
 | **Rust** | rustaceanvim (rust-analyzer + clippy) | codelldb | — | rustfmt |
+| **Flutter / Dart** | dartls (via flutter-tools) — hot reload, devices, dev log | flutter debug | neotest-dart | dart format |
 | **Groovy / Gradle** | treesitter (highlight) | — | — | — |
 | **Templ / HTMX** | templ LSP | — | — | templ fmt |
 
@@ -123,10 +124,11 @@ Leader is `<Space>`. Prefixes are namespaced to avoid collisions:
 | `<leader>m*` | **Maven** · `<leader>g*` Gradle/Git |
 | `<leader>R*` | **REST** client (kulala, in `.http`) |
 | `<leader>Q*` | **Query** / Database (vim-dadbod-ui) |
+| `<leader>F*` | **Flutter** (flutter-tools, in `.dart`) |
 | `<leader>x*` | Diagnostics / quickfix (Trouble) |
 
 Fold/debug/test keymaps and the full reference are in the
-[**cheatsheet**](docs/dotnet-cheatsheet.md).
+[**cheatsheet**](docs/nvim-cheatsheet.md).
 
 ---
 
@@ -141,7 +143,7 @@ Fold/debug/test keymaps and the full reference are in the
 │   ├── config/             # options, keymaps, autocmds, lazy bootstrap
 │   └── plugins/            # one file per concern (per-language + tooling)
 └── docs/
-    ├── dotnet-cheatsheet.md
+    ├── nvim-cheatsheet.md
     └── examples/sap-example.http
 ```
 
