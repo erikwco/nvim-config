@@ -21,6 +21,24 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- ── No continuar comentarios automáticamente ────────────────────────────────
+-- Quita los flags `r` y `o` de formatoptions:
+--   r → insertaba el comment leader (#, //) al dar <CR> en insert mode
+--   o → lo insertaba al dar `o`/`O` en normal mode
+-- LazyVim los trae en su default ("jcroqlnt") y cada ftplugin los re-aplica,
+-- por eso hay que quitarlos en un FileType autocmd (corre DESPUÉS del ftplugin).
+-- Se conservan `j` (quita el leader al unir líneas con J) y `c` (autowrap en
+-- comentarios largos), que sí son útiles.
+--
+-- Cuando SÍ quieras continuar un comentario, usa `gco` / `gcO` (añade línea
+-- comentada abajo/arriba) o escribe el `#` a mano.
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("no_auto_comment", { clear = true }),
+  callback = function()
+    vim.opt_local.formatoptions:remove({ "r", "o" })
+  end,
+})
+
 -- vim.api.nvim_create_autocmd("LspAttach", {
 --   callback = function(args)
 --     local client = vim.lsp.get_client_by_id(args.data.client_id)

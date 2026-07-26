@@ -171,3 +171,50 @@ map("n", "<leader>tv", function()
     },
   })
 end, { desc = "Terminal (vertical side)" })
+
+-- =======================================================================================
+-- Encoding / charset — ver, reabrir y convertir archivos (legacy cp1252/latin1)
+-- =======================================================================================
+-- El encoding vive siempre visible en la statusline (ver plugins/lualine.lua).
+--   :Reopen <enc>  → re-lee el MISMO archivo con otro charset (NO lo modifica,
+--                    solo cómo se interpreta) — para arreglar "mojibake"/basura.
+--   <leader>ce     → picker para reabrir con un charset de la lista.
+--   <leader>c8     → convierte el archivo a UTF-8 y lo guarda.
+local common_encodings = { "utf-8", "cp1252", "latin1", "utf-16le", "utf-16", "cp850", "iso-8859-1" }
+
+-- :Reopen cp1252   (autocompleta con <Tab>)
+vim.api.nvim_create_user_command("Reopen", function(o)
+  vim.cmd("edit ++enc=" .. o.args)
+end, {
+  nargs = 1,
+  complete = function(lead)
+    return vim.tbl_filter(function(e)
+      return e:find(lead, 1, true) == 1
+    end, common_encodings)
+  end,
+  desc = "Reabrir el archivo actual con un encoding específico",
+})
+
+-- <leader>ce → elegir encoding de un picker y reabrir con él
+map("n", "<leader>ce", function()
+  vim.ui.select(common_encodings, { prompt = "Reabrir con encoding:" }, function(enc)
+    if enc then
+      vim.cmd("edit ++enc=" .. enc)
+    end
+  end)
+end, { desc = "Encoding: reabrir con…" })
+
+-- <leader>c8 → convertir el archivo a UTF-8 y guardarlo
+map("n", "<leader>c8", function()
+  vim.cmd("setlocal fileencoding=utf-8")
+  vim.cmd("write")
+  vim.notify("Guardado como UTF-8", vim.log.levels.INFO)
+end, { desc = "Encoding: convertir a UTF-8 y guardar" })
+
+-- =======================================================================================
+-- SSHFS (fuse-t) — montar carpetas remotas por SSH. Helper propio compatible
+-- con fuse-t (el plugin sshfs.nvim no lo soporta; ver lua/util/sshfs.lua).
+-- Keymaps: <leader>Sm montar, <leader>Se explorar, <leader>Sf files,
+--          <leader>Su desmontar, <leader>SU desmontar todo, <leader>Sc config.
+-- =======================================================================================
+require("util.sshfs").setup()

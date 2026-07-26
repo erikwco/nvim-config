@@ -39,3 +39,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# SSHFS: rutas internas por host (local, no público)
+lua/util/sshfs_hosts.lua

@@ -121,4 +121,20 @@ vim.api.nvim_create_autocmd("InsertLeavePre", {
   end,
 })
 
+-- =======================================================================================
+-- Encoding / charset — detección automática de archivos legacy
+-- =======================================================================================
+-- `fileencodings` (en PLURAL) es la lista que Neovim prueba EN ORDEN al abrir un
+-- archivo, quedándose con la primera que decodifique sin errores:
+--   ucs-bom → respeta el BOM si existe (utf-8/utf-16 con marca)
+--   utf-8   → lo más común hoy; si el archivo es utf-8 válido, gana aquí
+--   cp1252  → Windows-1252: archivos legacy de Windows/Oracle/.NET (tildes, ñ, €…)
+--   latin1  → iso-8859-1: cajón de sastre, decodifica CUALQUIER byte; por eso va
+--             al FINAL (si estuviera antes, nada llegaría a probarse después).
+-- Añadir cp1252 antes de latin1 hace que los archivos legacy de los servidores
+-- (los que montas por SSHFS) se abran bien SOLOS, sin reabrir a mano.
+-- Nota: un utf-8 válido SIEMPRE se detecta como utf-8 (va primero); esto solo
+-- cambia el "fallback" para archivos que NO son utf-8.
+vim.opt.fileencodings = { "ucs-bom", "utf-8", "cp1252", "latin1" }
+
 --vim.lsp.handlers["textDocument/inlayHint"] = function() end
