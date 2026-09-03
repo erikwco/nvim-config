@@ -1,9 +1,9 @@
 # Neovim Dev Cheatsheet — C# · Go · Java · React/TS · Rust · Flutter
 
 > Referencia de mi config LazyVim: LSP, debug, tests, folds, terminales, REST,
-> DB, Flutter y más. Setup base: Roslyn/gopls/JDTLS/dartls/rust-analyzer +
-> easy-dotnet + kulala + vim-dadbod + nvim-ufo.
-> Última actualización: 2026-07-11.
+> DB, Flutter, Git (diffview+) y más. Setup base: Roslyn/gopls/JDTLS/dartls/rust-analyzer +
+> easy-dotnet + kulala + vim-dadbod + nvim-ufo + diffview-plus.
+> Última actualización: 2026-08-08.
 
 ---
 
@@ -17,18 +17,20 @@
 6. [REST Client (kulala — .http files)](#-rest-client-kulala--http-files)
 7. [Database (vim-dadbod-ui)](#️-database-vim-dadbod-ui)
 8. [Flutter / Dart](#-flutter--dart)
-9. [Build / Run / Test / Watch](#️-build--run--test--watch)
-10. [Publish multi-plataforma](#-publish-multi-plataforma)
-11. [Debug (DAP + netcoredbg)](#-debug-dap--netcoredbg)
-12. [Tests](#-tests)
-13. [Operaciones de proyecto y paquetes NuGet](#-operaciones-de-proyecto-y-paquetes-nuget)
-14. [Comandos de Roslyn LSP](#-comandos-de-roslyn-lsp)
-15. [User Secrets](#-user-secrets)
-16. [Formato (csharpier)](#-formato-csharpier)
-17. [Workflows típicos](#-workflows-típicos)
-18. [Troubleshooting](#-troubleshooting)
-19. [Convenciones de teclas](#️-convenciones-de-teclas)
-20. [Archivos de configuración](#-archivos-de-configuración)
+9. [Diffview+ (Git diffs / history / merge)](#-diffview-git-diffs--history--merge)
+10. [Docker (Dockerfile / compose)](#-docker-dockerfile--compose)
+11. [Build / Run / Test / Watch](#️-build--run--test--watch)
+12. [Publish multi-plataforma](#-publish-multi-plataforma)
+13. [Debug (DAP + netcoredbg)](#-debug-dap--netcoredbg)
+14. [Tests](#-tests)
+15. [Operaciones de proyecto y paquetes NuGet](#-operaciones-de-proyecto-y-paquetes-nuget)
+16. [Comandos de Roslyn LSP](#-comandos-de-roslyn-lsp)
+17. [User Secrets](#-user-secrets)
+18. [Formato (csharpier)](#-formato-csharpier)
+19. [Workflows típicos](#-workflows-típicos)
+20. [Troubleshooting](#-troubleshooting)
+21. [Convenciones de teclas](#️-convenciones-de-teclas)
+22. [Archivos de configuración](#-archivos-de-configuración)
 
 ---
 
@@ -621,6 +623,123 @@ sigue corriendo** — solo ocultaste la ventana. Para recuperarlo:
 - Dart usa **2 espacios** (configurado; `dart format` lo confirma al guardar)
 - Autocompletado, hover, diagnósticos vía el Dart LSP (integrado con blink.cmp)
 - Formato al guardar vía dartls
+
+---
+
+## 🔀 Diffview+ (Git diffs / history / merge)
+
+Plugin: [diffview-plus.nvim](https://github.com/dlyongemallo/diffview-plus.nvim)
+(fork mantenido de `sindrets/diffview.nvim`). Config en
+[`lua/plugins/diffview.lua`](../lua/plugins/diffview.lua).
+
+Diff de working tree / index / revs en un **solo tabpage**, historial de archivo,
+merge tool 3-way, staging de archivos/hunks. Se integra con **gitsigns** (LazyVim):
+al stagear hunks el panel se refresca solo.
+
+> ⚠️ Prefijo **`<leader>gv*`** a propósito: no usa `<leader>d*` (eso es **Debug/DAP**).
+
+### Atajos (`<leader>gv*`)
+
+| Tecla | Comando | Acción |
+|---|---|---|
+| `<leader>gv` | `:DiffviewToggle` | Abrir / cerrar Diffview |
+| `<leader>gvo` | `:DiffviewOpen` | Diff working tree vs index |
+| `<leader>gvc` | `:DiffviewClose` | Cerrar Diffview (o `:tabclose`) |
+| `<leader>gvh` | `:DiffviewFileHistory %` | Historial del archivo actual |
+| `<leader>gvH` | `:DiffviewFileHistory` | Historial de todo el repo |
+| `<leader>gvl` | `:.DiffviewFileHistory --follow` | Historial de la **línea** actual |
+| `v` + `<leader>gvh` | `:'<,'>DiffviewFileHistory --follow` | Historial del **rango** visual |
+| `<leader>gvm` | `:DiffviewOpen main` (o `master`) | Diff vs rama principal local |
+| `<leader>gvp` | `:DiffviewOpen origin/main...HEAD` | Review estilo **PR** (symmetric range) |
+
+### Comandos útiles sin keymap
+
+| Comando | Acción |
+|---|---|
+| `:DiffviewOpen HEAD~2` | Cambios desde 2 commits atrás |
+| `:DiffviewOpen origin/main...HEAD` | Solo lo que introduce la rama actual (PR) |
+| `:DiffviewOpen -- lua/plugins` | Limitar el diff a un path |
+| `:DiffviewDiffFiles a b` | Diff entre dos archivos arbitrarios |
+| `:DiffviewMergeFiles {out} {left} {right}` | Merge editor 3-way (sin VCS) |
+| `:DiffviewToggleFiles` / `:DiffviewFocusFiles` | Panel de archivos |
+| `:DiffviewRefresh` | Refrescar lista / stats (`!` fuerza reload) |
+
+### Dentro del panel de Diffview
+
+Pulsa **`g?`** en cualquier buffer de diffview para ver **todos** los maps internos.
+Los más usados:
+
+| Tecla | Acción (panel / diff) |
+|---|---|
+| `j` / `k` | Navegar archivos |
+| `<CR>` | Abrir el archivo bajo el cursor |
+| `-` / `s` | Stage / unstage archivo |
+| `S` / `U` | Stage / unstage **todos** |
+| `X` | Restaurar archivo al estado del otro lado del diff |
+| `w` / `C` | Toggle selección multi-archivo / limpiar (review progress) |
+| `]c` / `[c` | Siguiente / anterior hunk (diff mode nativo de Vim) |
+| `tab` / `s-tab` | Ciclar entre ventanas del layout |
+
+### Workflows rápidos
+
+**Ver lo que tienes sucio ahora:**
+```vim
+<leader>gv
+```
+
+**Review de tu rama vs main (estilo PR):**
+```vim
+<leader>gvp
+" o manualmente:
+:DiffviewOpen origin/main...HEAD
+```
+
+**Historial de un archivo / de unas líneas:**
+```vim
+" archivo actual
+<leader>gvh
+
+" rango visual (selecciona líneas en visual mode primero)
+v  …  <leader>gvh
+```
+
+**Resolver merge conflicts:**
+```vim
+:DiffviewOpen
+" elige un archivo en conflicto → layout merge_tool (3-way)
+" maps de OURS/THEIRS/BASE: g? en el buffer de merge
+```
+
+### Requisitos
+
+- Neovim ≥ 0.10 (tienes 0.12.x)
+- Git ≥ 2.31 (tienes 2.x)
+- Iconos: nvim-web-devicons / mini.icons (LazyVim ya trae uno)
+
+---
+
+## 🐳 Docker (Dockerfile / compose)
+
+Extra LazyVim: `lazyvim.plugins.extras.lang.docker` (activado en `lazyvim.json`).
+**No** hay Dockerfile en este repo de config — el extra sirve al editar Docker en
+cualquier proyecto.
+
+| Pieza | Rol |
+|---|---|
+| Treesitter `dockerfile` | Highlight |
+| **dockerls** (Mason) | LSP de `Dockerfile` / `Containerfile` |
+| **docker_compose_language_service** (Mason) | LSP de `compose.yml` / `docker-compose.yml` |
+| **hadolint** (Mason + nvim-lint) | Lint de Dockerfiles |
+
+### Cómo validar en un proyecto
+
+1. Abre un `Dockerfile` → `:LspInfo` debe listar `dockerls`
+2. Abre `compose.yml` / `docker-compose.yml` → `docker_compose_language_service`
+3. Diagnósticos de hadolint aparecen como lint en Dockerfiles
+4. Formato / diagnostics vía el LSP al editar
+
+> Los binarios `docker-langserver` / `docker-compose-langserver` **no** se lanzan
+> a mano en la shell (esperan protocolo LSP por stdio). Los arranca Neovim.
 
 ---
 
@@ -1239,7 +1358,9 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
   - `<leader>x*` → diagnósticos / quickfix (Trouble)
   - `<leader>j*` → **J**ava (JDTLS)
   - `<leader>m*` → **M**aven
-  - `<leader>g*` → **G**radle / **G**it
+  - `<leader>g*` → **G**radle / **G**it (LazyVim gitsigns/lazygit + Gradle custom)
+  - `<leader>gv*` → **Diffview+** (diffs / history / PR review) — ver sección Diffview
+  - `<leader>g{r,b,c,t}` → **Gradle** (run/build/clean/test) en `config/keymaps.lua`
 
 > 💡 **Cómo leer las notaciones**:
 > - `<leader>;r` significa **secuencia**: Space → `;` → `r`. NO simultáneo. Sueltas cada tecla antes de la siguiente.
@@ -1262,12 +1383,14 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
 | [`lua/plugins/diagnostics-loud.lua`](../lua/plugins/diagnostics-loud.lua) | Virtual text + signs + colores + auto-float |
 | [`lua/plugins/ufo.lua`](../lua/plugins/ufo.lua) | nvim-ufo: folds con info LSP + peek (`zK`) |
 | [`lua/plugins/flutter.lua`](../lua/plugins/flutter.lua) | flutter-tools: Dart LSP + run/hot-reload/devices/dev-log |
+| [`lua/plugins/diffview.lua`](../lua/plugins/diffview.lua) | diffview+: diffs tabpage, file history, merge tool (`<leader>gv*`) |
 | [`lua/plugins/signature.lua`](../lua/plugins/signature.lua) | Signature help compacto (blink) que no tapa el texto |
 | [`lua/plugins/noice-quiet.lua`](../lua/plugins/noice-quiet.lua) | Silencia el spam de progreso LSP (jdtls) |
 | [`lua/config/autocmds.lua`](../lua/config/autocmds.lua) | `preserve_blank_indent` + `auto_view` (folds/cursor) + spell off en docs |
 | [`lua/config/options.lua`](../lua/config/options.lua) | Indentación (Dart=2), folds, listchars, NormalFloat bg sólido |
 | [`scripts/gen-eclipse-classpath.sh`](../scripts/gen-eclipse-classpath.sh) | Genera `.classpath`/`.project` para proyectos IntelliJ legacy (JDTLS) |
 | LazyVim extra `lang.dotnet` | csharpier, netcoredbg adapter base, treesitter c_sharp, neotest-vstest |
+| LazyVim extra `lang.docker` | dockerls + compose LSP + hadolint (Dockerfile / compose) |
 
 ---
 
@@ -1278,6 +1401,7 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
 - [netcoredbg](https://github.com/Samsung/netcoredbg)
 - [nvim-ufo (folds)](https://github.com/kevinhwang91/nvim-ufo)
 - [kulala.nvim (REST client)](https://github.com/mistweaverco/kulala.nvim) — [Docs oficiales](https://kulala.mwco.app/)
+- [diffview-plus.nvim](https://github.com/dlyongemallo/diffview-plus.nvim) — diffs / history / merge en tabpage
 - [.NET 8 LTS support timeline](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core)
 - [Implicit usings reference](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#implicit-using-directives)
 - [Códigos de error CS de Roslyn](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/)

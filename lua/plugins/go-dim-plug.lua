@@ -2,10 +2,16 @@ return {
   "folke/snacks.nvim",
   ---@type snacks.Config
   opts = {
-    dim = {
-      -- your dim configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-    },
+    dim = {},
   },
+  init = function()
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "VeryLazy",
+      callback = function()
+        vim.schedule(function()
+          require("util.toggle_persist").setup()
+        end)
+      end,
+    })
+  end,
 }

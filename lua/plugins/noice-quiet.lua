@@ -5,19 +5,20 @@
 -- Se desactiva SOLO el progreso LSP. Los diagnósticos, hovers, code actions,
 -- mensajes de error y demás siguen igual. El estado del LSP se sigue viendo
 -- en la statusline.
+--
+-- El popup flotante de `:` (command_palette) se dejó como en LazyVim.
+-- Si nui volviera a crashear, esos errores se filtran para no inundar.
 
 return {
   {
     "folke/noice.nvim",
-    opts = {
-      lsp = {
-        progress = {
-          enabled = false, -- adiós al spam de "Publish Diagnostics jdtls" apilado
-        },
-      },
-      -- Filtro extra: por si algún LSP manda estos como mensajes normales,
-      -- los mandamos al historial (no como popup).
-      routes = {
+    opts = function(_, opts)
+      opts.lsp = vim.tbl_deep_extend("force", opts.lsp or {}, {
+        progress = { enabled = false },
+      })
+
+      opts.routes = opts.routes or {}
+      vim.list_extend(opts.routes, {
         {
           filter = {
             event = "lsp",
@@ -26,8 +27,6 @@ return {
           opts = { skip = true },
         },
         {
-          -- jdtls a veces manda "Validate documents" / "Publish Diagnostics"
-          -- como notificaciones. Al historial, no como popup.
           filter = {
             event = "notify",
             find = "Validate documents",
@@ -41,7 +40,35 @@ return {
           },
           opts = { skip = true },
         },
-      },
-    },
+        {
+          filter = { find = "is_window_valid" },
+          opts = { skip = true },
+        },
+        {
+          filter = { find = "nui/popup/border.lua" },
+          opts = { skip = true },
+        },
+      })
+      return opts
+    end,
+  },
+
+  {
+    "folke/snacks.nvim",
+    optional = true,
+    opts = function(_, opts)
+      local prev = opts.notifier and opts.notifier.filter
+      opts.notifier = opts.notifier or {}
+      opts.notifier.filter = function(notif)
+        local msg = notif.msg or ""
+        if msg:find("is_window_valid", 1, true) or msg:find("nui/popup/border.lua", 1, true) then
+          return false
+        end
+        if prev then
+          return prev(notif)
+        end
+        return true
+      end
+    end,
   },
 }

@@ -1,46 +1,65 @@
+-- Supermaven: ghost text. Por defecto PARADO para no pelear con Copilot NES.
+-- Sigue instalado: <leader>uS lo enciende (y apaga NES). <leader>ue cambia de motor.
+-- <Tab> lo resuelve blink (snippet → NES → ghost de Supermaven si está activo).
+
 return {
   {
     "supermaven-inc/supermaven-nvim",
-    event = "InsertEnter",
-    cmd = { "SupermavenUseFree", "SupermavenUsePro" },
+    lazy = true,
+    cmd = {
+      "SupermavenStart",
+      "SupermavenStop",
+      "SupermavenToggle",
+      "SupermavenUseFree",
+      "SupermavenUsePro",
+      "SupermavenStatus",
+    },
     opts = {
       keymaps = {
-        -- accept_suggestion = "<M-l>", -- evita conflictos con <Tab> de cmp/blink
-        -- accept_word = "<M-w>",
-        -- clear_suggestion = "<C-]>",
-        accept_suggestion = "<Tab>",
-        clear_suggestion = "<C-]>",
-        accept_word = "<C-j>",
+        -- nil: no robar <Tab>; lo acepta blink via LazyVim.cmp.actions.ai_accept
+        accept_suggestion = nil,
+        accept_word = nil,
+        clear_suggestion = nil,
       },
-      -- si usas cmp/blink como fuente, puedes apagar el inline:
+      disable_keymaps = true,
+      disable_inline_completion = false,
+      ignore_filetypes = { "bigfile", "snacks_input", "snacks_notif" },
       color = {
         suggestion_color = "#ffffff",
         cterm = 244,
       },
-      disable_inline_completion = false,
-      disable_keymaps = false,
-      ignore_filetypes = { "bigfile", "snacks_input", "snacks_notif" },
       log_level = "info",
     },
+    config = function(_, opts)
+      require("supermaven-nvim").setup(opts)
+      require("supermaven-nvim.completion_preview").suggestion_group = "SupermavenSuggestion"
+      -- setup() arranca el binario; lo paramos salvo que el usuario ya haya
+      -- elegido supermaven con <leader>uS / <leader>ue.
+      if vim.g.ai_engine ~= "supermaven" then
+        require("supermaven-nvim.api").stop()
+      end
+    end,
+  },
+
+  {
+    "folke/noice.nvim",
+    optional = true,
+    opts = function(_, opts)
+      opts.routes = opts.routes or {}
+      vim.list_extend(opts.routes, {
+        {
+          filter = {
+            event = "msg_show",
+            any = {
+              { find = "Starting Supermaven" },
+              { find = "Stopping Supermaven" },
+              { find = "Supermaven is not running" },
+              { find = "Supermaven Free Tier" },
+            },
+          },
+          opts = { skip = true },
+        },
+      })
+    end,
   },
 }
-
---  maven manual settings
---require("supermaven-nvim").setup({
---  keymaps = {
---    accept_suggestion = "<Tab>",
---    clear_suggestion = "<C-]>",
---    accept_word = "<C-j>",
---  },
---  ignore_filetypes = { cpp = true }, -- or { "cpp", }
---  color = {
---    suggestion_color = "#ffffff",
---    cterm = 244,
---  },
---  log_level = "info", -- set to "off" to disable logging completely
---  disable_inline_completion = false, -- disables inline completion for use with cmp
---  disable_keymaps = false, -- disables built in keymaps for more manual control
---  condition = function()
---    return false
---  end, -- condition to check for stopping supermaven, `true` means to stop supermaven when the condition is true.
---})

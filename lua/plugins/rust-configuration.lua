@@ -19,13 +19,23 @@ return {
     },
   },
 
-  -- 3) crates.nvim: completion & actions for Cargo.toml
+  -- 3) crates.nvim: versiones, features y actions en Cargo.toml.
+  -- Completion/hover/actions van por LSP in-process (blink.cmp lo consume).
+  -- No declarar completion.cmp ni null_ls: esas claves están deprecadas y
+  -- avisan aunque estén en false.
   {
     "saecki/crates.nvim",
     event = { "BufRead Cargo.toml" },
     opts = {
-      completion = { cmp = { enabled = true } },
-      null_ls = { enabled = true, name = "crates.nvim" },
+      completion = {
+        crates = { enabled = true },
+      },
+      lsp = {
+        enabled = true,
+        actions = true,
+        completion = true,
+        hover = true,
+      },
     },
   },
 
@@ -54,13 +64,12 @@ return {
             -- })
           end,
           default_settings = {
+            -- Schema actual de rust-analyzer (checkOnSave ya no es un objeto).
+            -- --all-targets / --all-features los inyecta RA por default; no van en extraArgs.
             ["rust-analyzer"] = {
               cargo = { allFeatures = true },
-              checkOnSave = { command = "clippy" },
-              check = {
-                command = "clippy",
-                extraArgs = { "--all-targets", "--all-features" },
-              },
+              checkOnSave = true,
+              check = { command = "clippy" },
               diagnostics = { enable = true },
               completion = { postfix = { enable = true } },
             },

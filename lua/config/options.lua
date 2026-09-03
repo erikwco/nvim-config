@@ -138,3 +138,11 @@ vim.api.nvim_create_autocmd("InsertLeavePre", {
 vim.opt.fileencodings = { "ucs-bom", "utf-8", "cp1252", "latin1" }
 
 --vim.lsp.handlers["textDocument/inlayHint"] = function() end
+
+-- =======================================================================================
+-- AI completion: Copilot NES por defecto, Supermaven instalado pero parado.
+--   <leader>uN  toggle NES (activar NES apaga Supermaven)
+--   <leader>uS  toggle Supermaven (activar Supermaven apaga NES)
+--   <leader>ue  cambiar de motor (NES ↔ Supermaven)
+-- =======================================================================================
+vim.g.ai_engine = "nes"
