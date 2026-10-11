@@ -67,6 +67,10 @@ return {
       vim.api.nvim_create_autocmd("CursorHold", {
         group = vim.api.nvim_create_augroup("diag_float_on_hold", { clear = true }),
         callback = function()
+          -- Respetar el toggle de diagnósticos del buffer actual.
+          if not vim.diagnostic.is_enabled({ bufnr = 0 }) then
+            return
+          end
           -- Solo abre si hay diagnósticos en la línea actual
           local line = vim.api.nvim_win_get_cursor(0)[1] - 1
           local diags = vim.diagnostic.get(0, { lnum = line })

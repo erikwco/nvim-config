@@ -1,8 +1,39 @@
 -- Motor de completion AI: Copilot NES xor Supermaven.
 -- Activar uno apaga el otro. Los dos pueden estar apagados.
--- Default (vim.g.ai_engine): "nes".
+-- Una sola preferencia persistida: "nes", "supermaven" u "off".
 
 local M = {}
+
+local path = vim.fn.stdpath("state") .. "/ai-engine.json"
+
+-- Se lee desde options.lua, antes de cargar los plugins.
+function M.load()
+  local file = io.open(path, "r")
+  if not file then
+    return "nes"
+  end
+  local raw = file:read("*a")
+  file:close()
+  local ok, engine = pcall(vim.json.decode, raw)
+  if ok and (engine == "nes" or engine == "supermaven" or engine == "off") then
+    return engine
+  end
+  return "nes"
+end
+
+local function persist()
+  -- Reemplazo atómico para que otra instancia no lea un archivo incompleto.
+  local temp = path .. "." .. vim.fn.getpid() .. ".tmp"
+  local ok, err = pcall(function()
+    vim.fn.mkdir(vim.fn.stdpath("state"), "p")
+    vim.fn.writefile({ vim.json.encode(vim.g.ai_engine) }, temp)
+    assert(vim.uv.fs_rename(temp, path))
+  end)
+  if not ok then
+    vim.fn.delete(temp)
+    vim.notify("No se pudo guardar el motor AI: " .. tostring(err), vim.log.levels.WARN)
+  end
+end
 
 local function nes_mod()
   local ok, nes = pcall(require, "sidekick.nes")
@@ -51,6 +82,8 @@ local function supermaven_aux_maps(on)
 end
 
 local function set_nes_only(on)
+  -- Deshabilitar el LSP también detiene sus procesos y evita nuevos arranques.
+  vim.lsp.enable("copilot", on)
   local nes = nes_mod()
   if not nes then
     return
@@ -59,12 +92,6 @@ local function set_nes_only(on)
 end
 
 local function set_supermaven_only(on)
-  if on then
-    vim.g.ai_engine = "supermaven"
-  elseif vim.g.ai_engine == "supermaven" then
-    vim.g.ai_engine = "off"
-  end
-
   local api = supermaven_api(on)
   if not api then
     supermaven_aux_maps(false)
@@ -81,6 +108,30 @@ local function set_supermaven_only(on)
     end
     supermaven_aux_maps(false)
   end
+end
+
+local function apply(engine)
+  -- Supermaven consulta esta preferencia durante su carga diferida.
+  vim.g.ai_engine = engine
+  if engine == "nes" then
+    set_supermaven_only(false)
+    set_nes_only(true)
+  else
+    set_nes_only(false)
+    set_supermaven_only(engine == "supermaven")
+  end
+end
+
+function M.restore()
+  apply(vim.g.ai_engine)
+end
+
+local function set(engine, on)
+  if not on then
+    engine = vim.g.ai_engine == engine and "off" or vim.g.ai_engine
+  end
+  apply(engine)
+  persist()
 end
 
 function M.nes_enabled()
@@ -104,20 +155,11 @@ function M.supermaven_running()
 end
 
 function M.set_nes(on)
-  set_nes_only(on)
-  if on then
-    vim.g.ai_engine = "nes"
-    set_supermaven_only(false)
-  elseif vim.g.ai_engine == "nes" then
-    vim.g.ai_engine = "off"
-  end
+  set("nes", on)
 end
 
 function M.set_supermaven(on)
-  if on then
-    set_nes_only(false)
-  end
-  set_supermaven_only(on)
+  set("supermaven", on)
 end
 
 function M.switch()

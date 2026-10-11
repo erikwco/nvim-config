@@ -1,9 +1,9 @@
-# Neovim Dev Cheatsheet — C# · Go · Java · React/TS · Rust · Flutter
+# Neovim Dev Cheatsheet — C# · Go · Java · React/TS · Rust · Flutter · AWS DVA
 
 > Referencia de mi config LazyVim: LSP, debug, tests, folds, terminales, REST,
 > DB, Flutter, Git (diffview+) y más. Setup base: Roslyn/gopls/JDTLS/dartls/rust-analyzer +
 > easy-dotnet + kulala + vim-dadbod + nvim-ufo + diffview-plus.
-> Última actualización: 2026-08-08.
+> Última actualización: 2026-10-11.
 
 ---
 
@@ -29,8 +29,10 @@
 18. [Formato (csharpier)](#-formato-csharpier)
 19. [Workflows típicos](#-workflows-típicos)
 20. [Troubleshooting](#-troubleshooting)
-21. [Convenciones de teclas](#️-convenciones-de-teclas)
-22. [Archivos de configuración](#-archivos-de-configuración)
+21. [AWS / DVA-C02](#-aws--dva-c02)
+22. [Convenciones de teclas](#️-convenciones-de-teclas)
+23. [Archivos de configuración](#-archivos-de-configuración)
+24. [Chat con IA (Sidekick)](#chat-con-ia-sidekick)
 
 ---
 
@@ -1339,6 +1341,63 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
 
 ---
 
+## ☁️ AWS / DVA-C02
+
+Sustituto del AWS Toolkit de VS Code para estudiar **Developer Associate**.
+No hay Amazon Q: el companion es **Grok** (`<leader>ag`) + MCP `aws-docs`.
+
+Config: [`lua/plugins/aws.lua`](../lua/plugins/aws.lua). Requiere **AWS CLI v2**
+(`aws configure` o SSO). El MCP de docs **no** necesita credenciales.
+
+### Explorador de la cuenta (`<leader>A*`)
+
+| Tecla | Acción |
+|---|---|
+| `<leader>Ap` | Picker de servicios (Lambda, S3, IAM, …) |
+| `<leader>Al` | Lambda |
+| `<leader>As` | S3 |
+| `<leader>Aw` | CloudWatch logs |
+| `<leader>Af` | CloudFormation stacks |
+| `<leader>Ag` | API Gateway |
+| `<leader>Ad` | DynamoDB |
+| `<leader>Ai` | IAM (users / roles / policies) |
+| `<leader>Am` | Secrets Manager |
+| `<leader>Ae` | ECS |
+| `<leader>Av` | VPC |
+
+En los buffers del explorador: `<CR>` detalle, `F` filtrar, `C` quitar filtro, `R` refrescar.
+`dd` (borrar recurso) está **desactivado**.
+
+Comandos: `:AwsPicker`, `:AwsLambda`, `:AwsS3`, `:AwsCW`, `:AwsCF`, `:AwsAGW`,
+`:AwsDDB`, `:AwsIAM`. Aceptan `--profile` y `--region`.
+
+### SAM / CloudFormation
+
+Detecta `AWSTemplateFormatVersion` / `AWS::Serverless-2016-10-31` y asigna
+`yaml.cloudformation` / `json.cloudformation`. También `*.sam.yaml`, `*.cfn.yaml`,
+`template.yaml`.
+
+- **yamlls** — completion + schemas SAM/CFN + tags `!Ref` / `!Sub` / `!GetAtt`
+- **cfn-lint** (Mason) — diagnósticos al guardar
+
+Nombra los templates `template.yaml` o `*.sam.yaml` para que el schema de SAM
+pegue bien. Linea modelo si el archivo se llama de otra forma:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/aws/serverless-application-model/main/samtranslator/schema/schema.json
+```
+
+### Estudiar con Grok
+
+1. `<leader>ag` abre Sidekick Grok (o esta sesión).
+2. Pregunta del examen; Grok usa el MCP `aws-docs` (docs oficiales, sin alucinaciones de API).
+3. Si el MCP no aparece: `/mcps` en Grok y confirma que `aws-docs` está enabled.
+
+Labs: CLI en el terminal flotante (`sam build`, `sam deploy`, `aws lambda invoke`).
+kulala (`.http`) sirve para pegarle a API Gateway.
+
+---
+
 ## ⌨️ Convenciones de teclas
 
 - `<leader>` = `Space` (LazyVim default)
@@ -1355,6 +1414,7 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
   - `<leader>R*` → **R**EST client (kulala, en `.http`)
   - `<leader>Q*` → **Q**uery / Database (vim-dadbod-ui)
   - `<leader>F*` → **F**lutter (flutter-tools, en `.dart`)
+  - `<leader>A*` → **A**WS (explorer DVA; `a` minúscula es Sidekick con Codex, Claude o Grok)
   - `<leader>x*` → diagnósticos / quickfix (Trouble)
   - `<leader>j*` → **J**ava (JDTLS)
   - `<leader>m*` → **M**aven
@@ -1383,6 +1443,7 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
 | [`lua/plugins/diagnostics-loud.lua`](../lua/plugins/diagnostics-loud.lua) | Virtual text + signs + colores + auto-float |
 | [`lua/plugins/ufo.lua`](../lua/plugins/ufo.lua) | nvim-ufo: folds con info LSP + peek (`zK`) |
 | [`lua/plugins/flutter.lua`](../lua/plugins/flutter.lua) | flutter-tools: Dart LSP + run/hot-reload/devices/dev-log |
+| [`lua/plugins/aws.lua`](../lua/plugins/aws.lua) | AWS DVA: aws.nvim explorer + SAM/CFN (yamlls, cfn-lint) |
 | [`lua/plugins/diffview.lua`](../lua/plugins/diffview.lua) | diffview+: diffs tabpage, file history, merge tool (`<leader>gv*`) |
 | [`lua/plugins/signature.lua`](../lua/plugins/signature.lua) | Signature help compacto (blink) que no tapa el texto |
 | [`lua/plugins/noice-quiet.lua`](../lua/plugins/noice-quiet.lua) | Silencia el spam de progreso LSP (jdtls) |
@@ -1391,6 +1452,43 @@ Si todavía no detecta cambios, el cache de Roslyn en `~/.cache/Roslyn/` puede e
 | [`scripts/gen-eclipse-classpath.sh`](../scripts/gen-eclipse-classpath.sh) | Genera `.classpath`/`.project` para proyectos IntelliJ legacy (JDTLS) |
 | LazyVim extra `lang.dotnet` | csharpier, netcoredbg adapter base, treesitter c_sharp, neotest-vstest |
 | LazyVim extra `lang.docker` | dockerls + compose LSP + hadolint (Dockerfile / compose) |
+
+---
+
+## Chat con IA (Sidekick)
+
+Sidekick abre Codex, Claude Code o Grok en un panel a la derecha. Usa los ejecutables
+del PATH y la sesión de autenticación de cada herramienta.
+Config: [`lua/plugins/sidekick.lua`](../lua/plugins/sidekick.lua).
+
+| Tecla | Acción |
+|---|---|
+| `<leader>ac` | Abrir u ocultar Codex |
+| `<leader>aC` | Abrir u ocultar Claude Code (C mayúscula) |
+| `<leader>ag` | Abrir u ocultar Grok |
+| `<leader>as` | Elegir la herramienta de chat |
+| `<leader>aa` | Abrir u ocultar una sesión de Sidekick |
+| `<leader>af` | Enviar la referencia al archivo actual |
+| `<leader>av` | Enviar la selección visual |
+| `<leader>at` | Enviar el contexto del cursor o la selección |
+| `<leader>ap` | Elegir un prompt, como `explain`, `review` o `explain_error` |
+| `<C-h>` dentro del chat | Volver al código a la izquierda |
+| `<C-.>` | Alternar el foco del chat; dentro del chat, ocultarlo |
+
+Los atajos de contexto usan la sesión disponible o muestran un selector si hay varias.
+`<leader>` es Espacio. En modo normal, Espacio → a → c abre Codex y
+Espacio → a → C abre Claude Code. Estos atajos también funcionan en modo visual;
+abren el chat y `<leader>av` envía la selección.
+
+Autenticación: `codex login status` muestra el estado. Si falta la sesión,
+`codex login` inicia el acceso desde el navegador, según la
+[documentación oficial de OpenAI](https://learn.chatgpt.com/docs/auth#codex-cli).
+
+El chat usa la herramienta elegida. Las sugerencias dentro del código usan Copilot NES
+o Supermaven, según la elección guardada con `<leader>ue`.
+Activar Supermaven con `<leader>uS` detiene también el servidor de Copilot.
+Activar NES con `<leader>uN` detiene Supermaven y vuelve a iniciar Copilot.
+Al abrir Neovim se restaura esa elección; Copilot solo arranca si NES está activo.
 
 ---
 

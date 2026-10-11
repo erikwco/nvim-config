@@ -53,7 +53,9 @@ vim.keymap.set("n", "<leader>mr", ":term " .. mvn .. " spring-boot:run<CR>", { d
 vim.keymap.set(
   "n",
   "<leader>mdr",
-  ":term " .. mvn .. [[ spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"<CR>]],
+  ":term "
+    .. mvn
+    .. [[ spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"<CR>]],
   { desc = "Maven: spring-boot:run + JDWP :5005" }
 )
 vim.keymap.set("n", "<leader>mb", ":term " .. mvn .. " package<CR>", { desc = "Maven: package" })
@@ -72,12 +74,7 @@ vim.keymap.set("n", "<leader>mp", function()
     end
   end)
 end, { desc = "Maven: spring-boot:run en módulo" })
-vim.keymap.set(
-  "n",
-  "<leader>hmr",
-  ":split term://" .. mvn .. " spring-boot:run<CR>",
-  { desc = "Maven run (hsplit)" }
-)
+vim.keymap.set("n", "<leader>hmr", ":split term://" .. mvn .. " spring-boot:run<CR>", { desc = "Maven run (hsplit)" })
 
 -- Mapeos para Neotest
 vim.keymap.set("n", "<leader>tn", function()
@@ -110,6 +107,12 @@ map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<cr>", { desc = "Go to Def" })
 map("n", "gr", "<cmd>lua vim.lsp.buf.references()<cr>", { desc = "Refs" })
 map("n", "K", "<cmd>lua vim.lsp.buf.hover()<cr>", { desc = "Hover" })
 map("n", "<leader>rn", "<cmd>lua vim.lsp.buf.rename()<cr>", { desc = "Rename" })
+
+-- Diagnostics: toggle temporal del buffer actual
+map("n", "<leader>td", function()
+  local enabled = vim.diagnostic.is_enabled({ bufnr = 0 })
+  vim.diagnostic.enable(not enabled, { bufnr = 0 })
+end, { desc = "Toggle diagnostics (buffer)" })
 
 -- Format (Conform)
 map("n", "<leader>cf", function()

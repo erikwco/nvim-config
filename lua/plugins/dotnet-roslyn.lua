@@ -4,7 +4,7 @@
 
 return {
   -- 1) Mason: añadir registry de Crashdummyy (donde vive el paquete `roslyn`)
-  --    e instalarlo. El registry oficial mason-org NO tiene Roslyn.
+  --    e instalar la versión distribuida con VS Code.
   {
     "mason-org/mason.nvim",
     opts = function(_, opts)
@@ -45,9 +45,19 @@ return {
       ignore_target = nil,
       broad_search = false,
       lock_target = false,
-      silent = false,
-      config = {
-        capabilities = nil, -- se setean dinámicamente desde lspconfig
+    },
+    -- Registrar antes de cargar el plugin: este habilita el LSP al cargarse.
+    init = function()
+      -- El servidor instalado por Mason puede ser anterior al modo daemon.
+      -- stdio funciona también con esas versiones (por ejemplo, Roslyn 5.8).
+      vim.lsp.config("roslyn", {
+        cmd = {
+          "roslyn-language-server", -- Mason añade su directorio bin al PATH.
+          "--stdio",
+          "--clientProcessId",
+          tostring(vim.uv.os_getpid()),
+        },
+        -- Los ajustes del servidor van en vim.lsp.config, no en opts.config.
         settings = {
           ["csharp|inlay_hints"] = {
             csharp_enable_inlay_hints_for_implicit_object_creation = true,
@@ -80,7 +90,7 @@ return {
             dotnet_search_reference_assemblies = true,
           },
         },
-      },
-    },
+      })
+    end,
   },
 }

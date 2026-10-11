@@ -29,6 +29,9 @@ Oracle/PL-SQL and HTTP APIs. Runs on **macOS and Linux**.
 | **Flutter / Dart** | dartls (via flutter-tools) — hot reload, devices, dev log | flutter debug | neotest-dart | dart format |
 | **Groovy / Gradle** | treesitter (highlight) | — | — | — |
 | **Templ / HTMX** | templ LSP | — | — | templ fmt |
+| **Elixir / Phoenix** | ElixirLS | ElixirLS: mix test / mix run | neotest-elixir | mix format |
+
+Elixir setup, checks, and commands are in [docs/elixir.md](docs/elixir.md).
 
 ### Tooling & QoL
 
@@ -39,6 +42,8 @@ Oracle/PL-SQL and HTTP APIs. Runs on **macOS and Linux**.
 - **vim-dadbod-ui** — SQL client / DB browser (PostgreSQL, Oracle, MySQL, SQLite).
 - **nvim-ufo** — smarter folds (LSP-aware) with **persistence across sessions**.
 - **Supermaven** — AI inline completion.
+- **Sidekick** — Codex (`<leader>ac`), Claude Code (`<leader>aC`) and Grok (`<leader>ag`)
+  in a right-hand terminal panel, plus Copilot NES as an alternative to Supermaven.
 - **diagnostics-loud** — high-visibility diagnostics (severity-colored virtual
   text + signs + auto-float on hover).
 - Sensible defaults: 4-space indent (2 for JS/TS/JSON/YAML, tabs for Go),
@@ -60,6 +65,7 @@ Oracle/PL-SQL and HTTP APIs. Runs on **macOS and Linux**.
 - Per-language toolchains you actually use (install only what you need):
   - **.NET 8 SDK** + `dotnet tool install --global EasyDotnet`
   - **Go**, **JDK 21** (+ others via [mise](https://mise.jdx.dev) if multi-JDK), **Node/Bun**, **Rust** (rustup)
+  - **Elixir** with compatible **Erlang/OTP**, plus `mix local.hex` and `mix local.rebar`
   - **psql** for the DB browser (PostgreSQL); Oracle Instant Client for Oracle
 
 ---

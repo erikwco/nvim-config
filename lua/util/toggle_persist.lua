@@ -10,6 +10,7 @@ local skip = {
   zoom = true,
   profiler = true,
   profiler_highlights = true,
+  -- util.ai_engine guarda ambos como una sola elección en ai-engine.json.
   sidekick_nes = true,
   supermaven = true,
 }

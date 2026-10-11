@@ -80,8 +80,13 @@ vim.api.nvim_create_autocmd("FileType", {
     "css",
     "scss",
     "yaml",
+    "yaml.cloudformation",
+    "json.cloudformation",
     "lua",
     "dart",
+    "elixir",
+    "eelixir",
+    "heex",
   },
   callback = function()
     vim.bo.tabstop = 2
@@ -140,9 +145,9 @@ vim.opt.fileencodings = { "ucs-bom", "utf-8", "cp1252", "latin1" }
 --vim.lsp.handlers["textDocument/inlayHint"] = function() end
 
 -- =======================================================================================
--- AI completion: Copilot NES por defecto, Supermaven instalado pero parado.
+-- AI completion: recordar la última elección; NES si aún no hay preferencia.
 --   <leader>uN  toggle NES (activar NES apaga Supermaven)
 --   <leader>uS  toggle Supermaven (activar Supermaven apaga NES)
 --   <leader>ue  cambiar de motor (NES ↔ Supermaven)
 -- =======================================================================================
-vim.g.ai_engine = "nes"
+vim.g.ai_engine = require("util.ai_engine").load()

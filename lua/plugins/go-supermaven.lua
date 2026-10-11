@@ -1,5 +1,5 @@
--- Supermaven: ghost text. Por defecto PARADO para no pelear con Copilot NES.
--- Sigue instalado: <leader>uS lo enciende (y apaga NES). <leader>ue cambia de motor.
+-- Supermaven: ghost text. Se restaura si fue el último motor elegido.
+-- <leader>uS lo enciende (y apaga NES). <leader>ue cambia de motor.
 -- <Tab> lo resuelve blink (snippet → NES → ghost de Supermaven si está activo).
 
 return {
@@ -34,7 +34,7 @@ return {
       require("supermaven-nvim").setup(opts)
       require("supermaven-nvim.completion_preview").suggestion_group = "SupermavenSuggestion"
       -- setup() arranca el binario; lo paramos salvo que el usuario ya haya
-      -- elegido supermaven con <leader>uS / <leader>ue.
+      -- elegido supermaven, en esta sesión o en la preferencia guardada.
       if vim.g.ai_engine ~= "supermaven" then
         require("supermaven-nvim.api").stop()
       end

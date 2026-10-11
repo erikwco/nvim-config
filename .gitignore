@@ -27,6 +27,7 @@ view/
 # ── Secrets / entornos locales (defensivo, por si algún día creas) ─
 .env
 .env.*
+.lazy.lua
 *.local.json
 secrets.json
 http-client.env.json
