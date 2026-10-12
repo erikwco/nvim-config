@@ -101,44 +101,21 @@ return {
     end,
   },
 
-  -- 4) Highlights más contrastados para los squiggles (undercurl rojo brillante en errores)
+  -- 4) Conservar el énfasis usando los colores de diagnóstico del tema activo.
   {
     "LazyVim/LazyVim",
     opts = function()
       vim.api.nvim_create_autocmd("ColorScheme", {
         group = vim.api.nvim_create_augroup("diag_hl_loud", { clear = true }),
         callback = function()
-          -- Undercurl (la "rayita" debajo del símbolo)
-          -- Error: rojo brillante para que NO se pase por alto
-          vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#FF5555" })
-          -- Warn: naranja apagado (no rojo, no se confunde con error)
-          vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "#E5A05C" })
-          -- Info: cyan suave
-          vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "#7AC5D8" })
-          -- Hint: verde menta apagado
-          vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "#6FAE91" })
-
-          -- Virtual text inline (el mensaje a la derecha de la línea)
-          -- Error: rojo saturado, bold para que destaque
-          vim.api.nvim_set_hl(0, "DiagnosticVirtualTextError", { fg = "#FF6E6E", bold = true, italic = true })
-          -- Warn: naranja medio
-          vim.api.nvim_set_hl(0, "DiagnosticVirtualTextWarn", { fg = "#D9A05B", italic = true })
-          -- Info: cyan apagado, sin bold (informativo, no urgente)
-          vim.api.nvim_set_hl(0, "DiagnosticVirtualTextInfo", { fg = "#7AC5D8", italic = true })
-          -- Hint: gris-verde, casi se confunde con comentario (sugerencias del LSP)
-          vim.api.nvim_set_hl(0, "DiagnosticVirtualTextHint", { fg = "#6C7A89", italic = true })
-
-          -- Signs en la columna (los iconos ●▲◆)
-          vim.api.nvim_set_hl(0, "DiagnosticSignError", { fg = "#FF5555", bold = true })
-          vim.api.nvim_set_hl(0, "DiagnosticSignWarn", { fg = "#E5A05C" })
-          vim.api.nvim_set_hl(0, "DiagnosticSignInfo", { fg = "#7AC5D8" })
-          vim.api.nvim_set_hl(0, "DiagnosticSignHint", { fg = "#6FAE91" })
-
-          -- Texto de los floats
-          vim.api.nvim_set_hl(0, "DiagnosticFloatingError", { fg = "#FF6E6E", bold = true })
-          vim.api.nvim_set_hl(0, "DiagnosticFloatingWarn", { fg = "#E5A05C" })
-          vim.api.nvim_set_hl(0, "DiagnosticFloatingInfo", { fg = "#7AC5D8" })
-          vim.api.nvim_set_hl(0, "DiagnosticFloatingHint", { fg = "#6C7A89" })
+          for _, severity in ipairs({ "Error", "Warn", "Info", "Hint" }) do
+            local color = vim.api.nvim_get_hl(0, { name = "Diagnostic" .. severity, link = false }).fg
+            local bold = severity == "Error"
+            vim.api.nvim_set_hl(0, "DiagnosticUnderline" .. severity, { undercurl = true, sp = color })
+            vim.api.nvim_set_hl(0, "DiagnosticVirtualText" .. severity, { fg = color, bold = bold, italic = true })
+            vim.api.nvim_set_hl(0, "DiagnosticSign" .. severity, { fg = color, bold = bold })
+            vim.api.nvim_set_hl(0, "DiagnosticFloating" .. severity, { fg = color, bold = bold })
+          end
         end,
       })
       -- Disparar también ahora (si el tema ya está cargado al arrancar)

@@ -16,7 +16,7 @@ return {
       color = function()
         local enc = (vim.bo.fileencoding ~= "" and vim.bo.fileencoding) or vim.o.encoding
         if enc ~= "utf-8" then
-          return { fg = "#f38ba8", gui = "bold" } -- rojo catppuccin-mocha
+          return { fg = vim.api.nvim_get_hl(0, { name = "DiagnosticError", link = false }).fg, gui = "bold" }
         end
       end,
     })

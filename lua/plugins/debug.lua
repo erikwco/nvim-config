@@ -66,10 +66,20 @@ return {
         port = 5005,
       })
 
-      -- Highlights personalizados
-      vim.api.nvim_set_hl(0, "DapBreakpoint", { fg = "#993939", bg = "#31353f" })
-      vim.api.nvim_set_hl(0, "DapLogPoint", { fg = "#61afef", bg = "#31353f" })
-      vim.api.nvim_set_hl(0, "DapStopped", { fg = "#98c379", bg = "#31353f" })
+      local function apply_highlights()
+        vim.api.nvim_set_hl(0, "DapBreakpoint", { link = "DiagnosticSignError" })
+        vim.api.nvim_set_hl(0, "DapBreakpointCondition", { link = "DiagnosticSignWarn" })
+        vim.api.nvim_set_hl(0, "DapLogPoint", { link = "DiagnosticSignInfo" })
+        vim.api.nvim_set_hl(0, "DapStopped", {
+          fg = vim.api.nvim_get_hl(0, { name = "DiagnosticOk", link = false }).fg,
+          bg = vim.api.nvim_get_hl(0, { name = "CursorLine", link = false }).bg,
+        })
+      end
+      apply_highlights()
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        group = vim.api.nvim_create_augroup("dap_theme", { clear = true }),
+        callback = apply_highlights,
+      })
     end,
   },
   {
