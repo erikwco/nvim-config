@@ -46,6 +46,8 @@ Elixir setup, checks, and commands are in [docs/elixir.md](docs/elixir.md).
   in a right-hand terminal panel, plus Copilot NES as an alternative to Supermaven.
 - **diagnostics-loud** — high-visibility diagnostics (severity-colored virtual
   text + signs + auto-float on hover).
+- **TokyoNight Day/Moon** follows the terminal's light/dark background. Returning
+  focus refreshes detection; `<leader>ub` changes it temporarily for the session.
 - Sensible defaults: 4-space indent (2 for JS/TS/JSON/YAML, tabs for Go),
   preserved blank-line indentation, persistent folds + cursor position.
 

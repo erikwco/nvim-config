@@ -8,6 +8,18 @@
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 --
 
+-- Refrescar el fondo al volver a Neovim, incluso si la terminal no notificó
+-- el cambio de tema. nvim_ui_send (0.12+) solo escribe a UIs con un TTY.
+if vim.api.nvim_ui_send then
+  vim.api.nvim_create_autocmd("FocusGained", {
+    group = vim.api.nvim_create_augroup("terminal_background", { clear = true }),
+    desc = "Refresh terminal background color",
+    callback = function()
+      vim.api.nvim_ui_send("\027]11;?\007")
+    end,
+  })
+end
+
 -- ── Desactivar spell check en markdown/docs ─────────────────────────────────
 -- LazyVim activa `spell` (en inglés) para markdown/text/gitcommit. En docs
 -- técnicos en español que mezclan nombres de productos (Traefik, CrowdSec...),

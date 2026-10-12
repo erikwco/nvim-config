@@ -1,15 +1,9 @@
 -- Options are automatically loaded before lazy.nvim startup
 -- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
 -- Add any additional options here
--- Mantener el fondo sólido del colorscheme (catppuccin-mocha: #1e1e2e).
--- Antes había un autocmd que ponía `Normal guibg=NONE` para hacer transparente
--- el editor y que se mezclara con el terminal, pero eso causaba que:
---   * El editor se viera del color del terminal (gris en tu caso)
---   * Los floats de UFO peek (zK) usaran ese Normal transparente → ilegibles
--- Quitándolo, vuelve el dark blue de catppuccin a todo: editor, sidebar, floats.
---
--- Si en algún momento quieres recuperar transparencia (raro), descomenta esta línea:
--- vim.api.nvim_set_hl(0, "Normal", { bg = "none", ctermbg = "none" })
+-- TokyoNight alterna Day/Moon según el fondo que detecta Neovim en la terminal.
+-- No fijar `background`: desactiva la detección automática al arrancar.
+-- Conservar fondos sólidos mantiene legibles el editor y los floats de UFO.
 
 -- =======================================================================================
 -- Folds (plegado de código)
