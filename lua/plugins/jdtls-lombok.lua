@@ -19,7 +19,23 @@ return {
     end,
   },
 
-  -- 2) JDTLS
+  -- 2) Excluir jdtls del auto-enable de mason-lspconfig: lo arranca nvim-jdtls
+  --    (abajo) con su propio cmd/root/bundles. Sin esto se levantaba un segundo
+  --    cliente con la config genérica de lspconfig (antes se parcheaba
+  --    vim.lsp.start en autocmds.lua). Mismo truco que el extra lang.java.
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = { jdtls = {} },
+      setup = {
+        jdtls = function()
+          return true
+        end,
+      },
+    },
+  },
+
+  -- 3) JDTLS
   {
     "mfussenegger/nvim-jdtls",
     dependencies = {

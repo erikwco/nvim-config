@@ -108,17 +108,9 @@ vim.api.nvim_create_autocmd("FileType", {
 -- Ver `:h cpo-I` para detalles.
 vim.opt.cpoptions:append("I")
 
--- Bonus: evita que InsertLeave (Esc al salir del modo insert) recorte espacios
--- en blanco al final de la línea actual. Esto previene perder la indentación
--- de la línea donde estabas escribiendo si sales sin teclear contenido.
--- (LazyVim no recorta por defecto, pero por si acaso algún plugin lo hace.)
-vim.api.nvim_create_autocmd("InsertLeavePre", {
-  callback = function()
-    -- No-op intencional: solo nos aseguramos de no tener ningún autocmd previo
-    -- borrando whitespace. Si en el futuro instalas algo tipo `mini.trailspace`
-    -- con auto-trim, configúralo con `only_modified = true` o quita ese plugin.
-  end,
-})
+-- CursorHold cada 500 ms (default 4000): lo usa el float automático de
+-- diagnósticos (ver autocmds.lua, grupo diag_float_on_hold).
+vim.opt.updatetime = 500
 
 -- =======================================================================================
 -- Encoding / charset — detección automática de archivos legacy

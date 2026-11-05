@@ -1,9 +1,8 @@
 return -- lazy.nvim
 {
   "GustavEikaas/easy-dotnet.nvim",
-  -- 'nvim-telescope/telescope.nvim' or 'ibhagwan/fzf-lua' or 'folke/snacks.nvim'
-  -- are highly recommended for a better experience
-  dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim" },
+  -- Picker: snacks (el de LazyVim); así no cargamos telescope como segundo picker.
+  dependencies = { "nvim-lua/plenary.nvim", "folke/snacks.nvim" },
   -- Solo cargar si `dotnet` está disponible. En máquinas sin .NET instalado
   -- (ej. un Linux donde solo editas web), easy-dotnet intentaría arrancar su
   -- servidor RPC y falla con "Vim:E475: 'dotnet' is not executable".
@@ -108,12 +107,8 @@ return -- lazy.nvim
         type = "block_scoped",
         enabled = true,
       },
-      -- choose which picker to use with the plugin
-      -- possible values are "telescope" | "fzf" | "snacks" | "basic"
-      -- if no picker is specified, the plugin will determine
-      -- the available one automatically with this priority:
-      -- telescope -> fzf -> snacks ->  basic
-      picker = "telescope",
+      -- Picker: "telescope" | "fzf" | "snacks" | "basic". Usamos el de LazyVim.
+      picker = "snacks",
       -- Desactivar el cliente Roslyn que easy-dotnet arranca internamente:
       -- usamos seblyng/roslyn.nvim (configurado en dotnet-roslyn.lua) y tener
       -- los dos atachados al mismo buffer .cs causa duplicación de:
@@ -131,7 +126,6 @@ return -- lazy.nvim
       dotnet.secrets()
     end, {})
 
-    -- Nota: <leader>cR (Run Project) está definido en dotnet-keymaps.lua.
-    -- Se quitó <C-p> porque colisiona con "previous completion item" de cmp/blink.
+    -- Atajos: <leader>;* y <leader>cp* en plugins/dotnet-keymaps.lua.
   end,
 }

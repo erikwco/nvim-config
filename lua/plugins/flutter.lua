@@ -20,10 +20,7 @@ return {
   {
     "nvim-flutter/flutter-tools.nvim",
     ft = "dart",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope.nvim", -- picker de devices/comandos
-    },
+    dependencies = { "nvim-lua/plenary.nvim" }, -- devices/comandos vía vim.ui.select (snacks)
     opts = function()
       -- Capabilities de blink.cmp (tu motor de completion) para el LSP
       local capabilities

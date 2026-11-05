@@ -1,11 +1,15 @@
 -- Diagnósticos "loud": que los errores no se te pasen por alto.
 -- Aplica a TODOS los LSPs (Roslyn, gopls, jdtls, rust-analyzer, vtsls, etc).
+--
+-- Complementos en config/: `updatetime = 500` (options.lua) y los autocmds
+-- `diag_float_on_hold` (float automático al reposar sobre un error) y
+-- `diag_hl_loud` (colores/undercurl del tema) en autocmds.lua.
 
 return {
   {
     "neovim/nvim-lspconfig",
     opts = function(_, opts)
-      -- 1) Configurar vim.diagnostic globalmente
+      -- 1) vim.diagnostic.config global (LazyVim lo aplica desde opts.diagnostics)
       opts.diagnostics = vim.tbl_deep_extend("force", opts.diagnostics or {}, {
         underline = true,
         update_in_insert = false, -- no spammear mientras escribes
@@ -52,74 +56,20 @@ return {
         },
       })
 
+      -- 2) Hover (K) con border redondeado.
+      -- En Neovim 0.11+ vim.lsp.buf.hover() ya no pasa por vim.lsp.handlers ni
+      -- acepta vim.lsp.with (eliminado en 0.13): las opciones van en la llamada.
+      -- Se redefine el keymap K de LazyVim (buffer-local al attach del LSP).
+      local keys = require("lazyvim.plugins.lsp.keymaps").get()
+      keys[#keys + 1] = {
+        "K",
+        function()
+          return vim.lsp.buf.hover({ border = "rounded", max_width = 100 })
+        end,
+        desc = "Hover",
+      }
+
       return opts
-    end,
-  },
-
-  -- 3) Auto-abrir diagnostic float al pasar 500ms sobre una línea con error
-  --    + setear updatetime para que CursorHold dispare rápido
-  --    + LSP hover/signature_help con border redondeado
-  {
-    "folke/snacks.nvim", -- ya está en tu setup; lo usamos como hook de "VeryLazy"
-    opts = function()
-      vim.opt.updatetime = 500 -- CursorHold cada 500ms (default es 4000)
-
-      vim.api.nvim_create_autocmd("CursorHold", {
-        group = vim.api.nvim_create_augroup("diag_float_on_hold", { clear = true }),
-        callback = function()
-          -- Respetar el toggle de diagnósticos del buffer actual.
-          if not vim.diagnostic.is_enabled({ bufnr = 0 }) then
-            return
-          end
-          -- Solo abre si hay diagnósticos en la línea actual
-          local line = vim.api.nvim_win_get_cursor(0)[1] - 1
-          local diags = vim.diagnostic.get(0, { lnum = line })
-          if #diags == 0 then
-            return
-          end
-          -- No abrir si ya hay un float visible
-          for _, win in ipairs(vim.api.nvim_list_wins()) do
-            local cfg = vim.api.nvim_win_get_config(win)
-            if cfg.relative ~= "" then
-              return
-            end
-          end
-          vim.diagnostic.open_float(nil, {
-            focus = false,
-            scope = "line",
-            border = "rounded",
-            source = "if_many",
-          })
-        end,
-      })
-
-      -- Hover y signature_help con border redondeado (Neovim 0.10+ usa vim.lsp.buf.hover())
-      vim.lsp.handlers["textDocument/hover"] =
-        vim.lsp.with(vim.lsp.handlers.hover, { border = "rounded", max_width = 100 })
-      vim.lsp.handlers["textDocument/signatureHelp"] =
-        vim.lsp.with(vim.lsp.handlers.signature_help, { border = "rounded", max_width = 100 })
-    end,
-  },
-
-  -- 4) Conservar el énfasis usando los colores de diagnóstico del tema activo.
-  {
-    "LazyVim/LazyVim",
-    opts = function()
-      vim.api.nvim_create_autocmd("ColorScheme", {
-        group = vim.api.nvim_create_augroup("diag_hl_loud", { clear = true }),
-        callback = function()
-          for _, severity in ipairs({ "Error", "Warn", "Info", "Hint" }) do
-            local color = vim.api.nvim_get_hl(0, { name = "Diagnostic" .. severity, link = false }).fg
-            local bold = severity == "Error"
-            vim.api.nvim_set_hl(0, "DiagnosticUnderline" .. severity, { undercurl = true, sp = color })
-            vim.api.nvim_set_hl(0, "DiagnosticVirtualText" .. severity, { fg = color, bold = bold, italic = true })
-            vim.api.nvim_set_hl(0, "DiagnosticSign" .. severity, { fg = color, bold = bold })
-            vim.api.nvim_set_hl(0, "DiagnosticFloating" .. severity, { fg = color, bold = bold })
-          end
-        end,
-      })
-      -- Disparar también ahora (si el tema ya está cargado al arrancar)
-      vim.cmd("doautocmd ColorScheme")
     end,
   },
 }

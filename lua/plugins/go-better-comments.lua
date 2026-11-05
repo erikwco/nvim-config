@@ -1,8 +1,13 @@
 return {
   {
     "folke/paint.nvim",
-    event = "BufReadPost", -- carga con buffer real
+    event = "LazyFile",
     config = function()
+      -- Filetypes reales (antes decía js/ts/tsx, que no existen → nunca aplicaba en JS/TS)
+      local code_filetypes = {
+        "go", "java", "cs", "rust", "dart",
+        "javascript", "javascriptreact", "typescript", "typescriptreact",
+      }
       local function apply_highlights()
         for name, source in pairs({
           PaintBlue = "Function",
@@ -24,31 +29,31 @@ return {
         highlights = {
           -- Go / JS / TS / Java / C#
           {
-            filter = { filetype = { "go", "js", "ts", "tsx", "java", "cs" } },
+            filter = { filetype = code_filetypes },
             pattern = "^%s*//%*.*",
             hl = "PaintBlue",
             hl_mode = "replace",
           },
           {
-            filter = { filetype = { "go", "js", "ts", "tsx", "java", "cs" } },
+            filter = { filetype = code_filetypes },
             pattern = "^%s*//%?.*",
             hl = "PaintRed",
             hl_mode = "replace",
           },
           {
-            filter = { filetype = { "go", "js", "ts", "tsx", "java", "cs" } },
+            filter = { filetype = code_filetypes },
             pattern = "^%s*//%+.*",
             hl = "PaintGreen",
             hl_mode = "replace",
           },
           {
-            filter = { filetype = { "go", "js", "ts", "tsx", "java", "cs" } },
+            filter = { filetype = code_filetypes },
             pattern = "^%s*//%-.*",
             hl = "PaintYellow",
             hl_mode = "replace",
           },
           {
-            filter = { filetype = { "go", "js", "ts", "tsx", "java", "cs" } },
+            filter = { filetype = code_filetypes },
             pattern = "^%s*//!.*",
             hl = "PaintMagenta",
             hl_mode = "replace",
@@ -58,7 +63,7 @@ return {
           { filter = { filetype = "lua" }, pattern = "^%s*%-%-%*.*", hl = "PaintBlue", hl_mode = "replace" },
           { filter = { filetype = "lua" }, pattern = "^%s*%-%-%?.*", hl = "PaintRed", hl_mode = "replace" },
           { filter = { filetype = "lua" }, pattern = "^%s*%-%-%+.*", hl = "PaintGreen", hl_mode = "replace" },
-          { filter = { filetype = "lua" }, pattern = "^%s*%-%%-.*", hl = "PaintYellow", hl_mode = "replace" },
+          { filter = { filetype = "lua" }, pattern = "^%s*%-%-%-.*", hl = "PaintYellow", hl_mode = "replace" },
         },
       })
 

@@ -8,6 +8,7 @@
 --
 -- Lo único que falta es asistencia editando el build.gradle EN SÍ. Para eso:
 --   1. Treesitter `groovy` → highlighting + folds + indent (ganancia clara) ✅
+--      (Neovim ya detecta *.gradle como filetype groovy; no hay que registrarlo.)
 --   2. groovyls → autocompletion genérico de Groovy (valor limitado para el
 --      DSL de Gradle, consume RAM). Opcional, comentado abajo.
 
@@ -21,25 +22,7 @@ return {
     end,
   },
 
-  -- 2) Asegurar que los archivos Gradle se detecten como filetype "groovy"
-  --    (Neovim ya lo hace para build.gradle, pero reforzamos settings.gradle, etc.)
-  {
-    "nvim-treesitter/nvim-treesitter",
-    init = function()
-      vim.filetype.add({
-        extension = { gradle = "groovy" },
-        filename = {
-          ["build.gradle"] = "groovy",
-          ["settings.gradle"] = "groovy",
-        },
-        pattern = {
-          [".*%.gradle"] = "groovy",
-        },
-      })
-    end,
-  },
-
-  -- 3) (OPCIONAL) groovyls — Groovy Language Server.
+  -- 2) (OPCIONAL) groovyls — Groovy Language Server.
   --    Descomenta TODO este bloque si quieres autocompletion en build.gradle.
   --    Advertencia: entiende Groovy genérico, NO el modelo de Gradle (tasks,
   --    plugin extensions como `application{}`, `shadowJar{}`, etc.). Consume
@@ -58,12 +41,7 @@ return {
   --     servers = {
   --       groovyls = {
   --         filetypes = { "groovy" },
-  --         -- Evita que arranque en archivos enormes generados
-  --         settings = {
-  --           groovy = {
-  --             classpath = {}, -- puedes añadir jars de Gradle si quieres más completion
-  --           },
-  --         },
+  --         settings = { groovy = { classpath = {} } },
   --       },
   --     },
   --   },
