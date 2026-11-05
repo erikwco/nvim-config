@@ -59,15 +59,18 @@ return {
       -- 2) Hover (K) con border redondeado.
       -- En Neovim 0.11+ vim.lsp.buf.hover() ya no pasa por vim.lsp.handlers ni
       -- acepta vim.lsp.with (eliminado en 0.13): las opciones van en la llamada.
-      -- Se redefine el keymap K de LazyVim (buffer-local al attach del LSP).
-      local keys = require("lazyvim.plugins.lsp.keymaps").get()
-      keys[#keys + 1] = {
+      -- LazyVim define los keymaps LSP en servers["*"].keys (opts_extend: se
+      -- concatenan y el último K gana), así que basta con añadir el nuestro.
+      opts.servers = opts.servers or {}
+      opts.servers["*"] = opts.servers["*"] or {}
+      opts.servers["*"].keys = opts.servers["*"].keys or {}
+      table.insert(opts.servers["*"].keys, {
         "K",
         function()
           return vim.lsp.buf.hover({ border = "rounded", max_width = 100 })
         end,
         desc = "Hover",
-      }
+      })
 
       return opts
     end,
