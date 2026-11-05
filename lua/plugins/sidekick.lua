@@ -113,7 +113,7 @@ return {
           set = function(state)
             require("util.ai_engine").set_supermaven(state)
           end,
-        }):map("<leader>uS")
+        }):map("<leader>uM")
       end)
 
       return opts
@@ -165,7 +165,7 @@ return {
         mode = { "n", "v" },
       },
       {
-        "<leader>uS",
+        "<leader>uM",
         function()
           local engine = require("util.ai_engine")
           engine.set_supermaven(not engine.supermaven_running())

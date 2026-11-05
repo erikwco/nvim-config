@@ -1,5 +1,5 @@
 -- Supermaven: ghost text. Se restaura si fue el último motor elegido.
--- <leader>uS lo enciende (y apaga NES). <leader>ue cambia de motor.
+-- <leader>uM lo enciende (y apaga NES). <leader>ue cambia de motor.
 -- <Tab> lo resuelve blink (snippet → NES → ghost de Supermaven si está activo).
 
 return {

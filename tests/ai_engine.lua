@@ -180,14 +180,14 @@ end
 
 local ok, err = pcall(function()
   session("nes")
-  session("nes", "uS", "supermaven")
-  session("supermaven", "uS", "off")
+  session("nes", "uM", "supermaven")
+  session("supermaven", "uM", "off")
   session("off", "uN", "nes")
   session("nes", "uN", "off")
   session("off", "ue", "nes")
   session("nes", "ue", "supermaven")
   session("supermaven", "ue", "nes")
-  session("nes", "uS", "supermaven")
+  session("nes", "uM", "supermaven")
   session("supermaven", "uN", "nes")
   session("nes")
 

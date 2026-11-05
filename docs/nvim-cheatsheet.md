@@ -1487,7 +1487,8 @@ Autenticación: `codex login status` muestra el estado. Si falta la sesión,
 
 El chat usa la herramienta elegida. Las sugerencias dentro del código usan Copilot NES
 o Supermaven, según la elección guardada con `<leader>ue`.
-Activar Supermaven con `<leader>uS` detiene también el servidor de Copilot.
+Activar Supermaven con `<leader>uM` detiene también el servidor de Copilot.
+`<leader>uS` conserva el toggle de Smooth Scroll de LazyVim.
 Activar NES con `<leader>uN` detiene Supermaven y vuelve a iniciar Copilot.
 Al abrir Neovim se restaura esa elección; Copilot solo arranca si NES está activo.
 
