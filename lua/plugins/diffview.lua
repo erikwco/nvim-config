@@ -6,10 +6,11 @@
 -- (LazyVim ya lo trae: el panel se refresca al stage/unstage).
 --
 -- Keymaps bajo <leader>gv* para NO chocar con:
---   <leader>d*  → DAP / debug (plugins/debug.lua)
---   <leader>g{r,b,c,t} → Gradle (config/keymaps.lua)
+--   <leader>d*  → DAP / debug (extra dap.core)
 --   <leader>gh* → gitsigns hunks (LazyVim)
---   <leader>gs / gd / gg → Snacks/Telescope git (LazyVim)
+--   <leader>gs / gd / gg / gb / gl → Snacks git (LazyVim)
+-- El toggle es <leader>gvv (no <leader>gv) para que la tecla no sea atajo y
+-- prefijo a la vez.
 --
 -- Comandos útiles (también con :):
 --   :DiffviewOpen                  working tree vs index
@@ -37,7 +38,7 @@ return {
     -- Lazy-load también al primer atajo (sin esperar a un :cmd).
     keys = {
       {
-        "<leader>gv",
+        "<leader>gvv",
         "<cmd>DiffviewToggle<cr>",
         desc = "Diffview: toggle",
       },

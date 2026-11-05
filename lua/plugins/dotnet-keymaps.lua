@@ -164,52 +164,10 @@ return {
         desc = "dotnet publish: usar .pubxml profile",
         ft = { "xml" },
       },
-      -- Atajos para build/test/restore/clean rápidos sin entrar a easy-dotnet
-      {
-        "<leader>cb",
-        function()
-          pick_csproj(function(p)
-            run_in_split("dotnet build " .. vim.fn.shellescape(p))
-          end)
-        end,
-        desc = "dotnet build",
-        ft = "cs",
-      },
-      {
-        "<leader>ct",
-        function()
-          pick_csproj(function(p)
-            run_in_split("dotnet test " .. vim.fn.shellescape(p))
-          end)
-        end,
-        desc = "dotnet test",
-        ft = "cs",
-      },
-      {
-        "<leader>cr",
-        function()
-          pick_csproj(function(p)
-            run_in_split("dotnet restore " .. vim.fn.shellescape(p))
-          end)
-        end,
-        desc = "dotnet restore",
-        ft = "cs",
-      },
-      {
-        "<leader>cw",
-        function()
-          pick_csproj(function(p)
-            run_in_split("dotnet watch run --project " .. vim.fn.shellescape(p))
-          end)
-        end,
-        desc = "dotnet watch run",
-        ft = "cs",
-      },
       -- ===== Comandos easy-dotnet bajo prefix <leader>;* (punto y coma) =====
       -- Prefijos ya ocupados que NO podemos usar:
-      --   <leader>c*  → LazyVim code actions (rename, format, action)
+      --   <leader>c*  → LazyVim code (cr = rename, cf = format, ca = action…)
       --   <leader>d*  → DAP debug (toggle bp, continue, step over, etc)
-      --   <leader>D*  → Snacks/LazyVim panel lateral del terminal
       --   <leader>n*  → LazyVim notifications/noice
       -- <leader>;* es único, sin conflictos, fácil de teclear (mano derecha).
       { "<leader>;r", "<cmd>Dotnet run<CR>", desc = "Dotnet: Run (picker)" },

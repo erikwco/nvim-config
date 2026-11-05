@@ -126,20 +126,9 @@ return {
         require("util.ai_engine").restore()
       end)
     end,
+    -- <tab> (NES jump/apply) y <leader>uN los mapea el extra; <leader>uM/uN se
+    -- redefinen arriba como Snacks.toggle para que NES y Supermaven no convivan.
     keys = {
-      {
-        "<tab>",
-        function()
-          if require("sidekick").nes_jump_or_apply() then
-            return ""
-          end
-          return "<Tab>"
-        end,
-        mode = { "n" },
-        expr = true,
-        silent = true,
-        desc = "NES jump / apply",
-      },
       {
         "<leader>ac",
         function()
@@ -163,14 +152,6 @@ return {
         end,
         desc = "Sidekick Grok",
         mode = { "n", "v" },
-      },
-      {
-        "<leader>uM",
-        function()
-          local engine = require("util.ai_engine")
-          engine.set_supermaven(not engine.supermaven_running())
-        end,
-        desc = "Toggle Supermaven",
       },
       {
         "<leader>ue",

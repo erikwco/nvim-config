@@ -7,7 +7,7 @@
 -- pero entiende los mounts de fuse-t. Sin depender de macFUSE.
 --
 -- Uso: require("util.sshfs").setup()  (se llama desde config/keymaps.lua)
--- Keymaps bajo <leader>S* (evita el <leader>m* de Maven).
+-- Keymaps bajo <leader>M* (M de Mount; <leader>S es "Select Scratch Buffer" en LazyVim).
 
 local M = {}
 
@@ -411,14 +411,14 @@ end
 -- ── Setup: keymaps + auto-unmount al salir ──────────────────────────────────
 function M.setup()
   local map = vim.keymap.set
-  map("n", "<leader>Sm", M.mount, { desc = "SSHFS: montar host" })
-  map("n", "<leader>Se", M.explore, { desc = "SSHFS: explorar mount" })
-  map("n", "<leader>Sf", M.find_files, { desc = "SSHFS: buscar archivos" })
-  map("n", "<leader>Su", M.unmount, { desc = "SSHFS: desmontar" })
-  map("n", "<leader>SU", function()
+  map("n", "<leader>Mm", M.mount, { desc = "SSHFS: montar host" })
+  map("n", "<leader>Me", M.explore, { desc = "SSHFS: explorar mount" })
+  map("n", "<leader>Mf", M.find_files, { desc = "SSHFS: buscar archivos" })
+  map("n", "<leader>Mu", M.unmount, { desc = "SSHFS: desmontar" })
+  map("n", "<leader>MU", function()
     M.unmount_all(false)
   end, { desc = "SSHFS: desmontar todo" })
-  map("n", "<leader>Sc", "<cmd>edit ~/.ssh/config<cr>", { desc = "SSHFS: editar ssh config" })
+  map("n", "<leader>Mc", "<cmd>edit ~/.ssh/config<cr>", { desc = "SSHFS: editar ssh config" })
 
   -- Desmontar todo al salir de nvim (evita mounts colgados)
   vim.api.nvim_create_autocmd("VimLeavePre", {
