@@ -2,7 +2,7 @@
 
 Referencia completa de mi config LazyVim: defaults de LazyVim/snacks, extras activos y atajos propios.
 `<leader>` = **Espacio**. Con which-key, pulsa `<leader>` y espera para ver el mapa; `<leader>sk` busca cualquier atajo por descripción; `<leader>?` lista los del buffer actual.
-Generado el 2026-11-05 (rama `refactor/config-cleanup`).
+Generado el 2026-11-06 (rama `refactor/config-cleanup`).
 
 Prefijos propios: `G` Gradle · `m` Maven · `;` .NET · `F` Flutter · `A` AWS · `M` SSHFS · `j` Java · `Q` Base de datos · `T` Terminales · `gv` Diffview · `v` VimWiki.
 
@@ -11,11 +11,13 @@ Prefijos propios: `G` Gradle · `m` Maven · `;` .NET · `F` Flutter · `A` AWS 
 | Tecla | Acción |
 |---|---|
 | `<C-h/j/k/l>` | Ir a la ventana izq/abajo/arriba/der |
-| `<C-↑/↓/←/→>` | Redimensionar ventana |
+| `<C-S-h/j/k/l>` | Redimensionar ventana (también dentro de terminales y Sidekick) |
+| `<C-↑/↓/←/→>` | Redimensionar (default LazyVim; en macOS se lo queda Mission Control) |
+| `<C-w><space>` → `>` `<` `+` `-` `=` | Modo "hydra": `Ctrl+w`, soltar, `Espacio`; luego las teclas se repiten sin cerrarse, `<Esc>` sale |
+| `10<C-w>>` · `<C-w>=` · `<C-w>_` / `<C-w>\|` | Resize nativo con conteo · igualar · maximizar alto / ancho |
 | `<leader>-` / `<leader>\|` | Split horizontal / vertical |
 | `<leader>wd` | Cerrar ventana |
 | `<leader>wm` / `<leader>uZ` | Maximizar ventana (toggle zoom) |
-| `<C-w><space>` | Modo "hydra" de ventanas (which-key) |
 | `<A-j>` / `<A-k>` | Mover línea/selección abajo/arriba |
 | `<C-s>` | Guardar |
 | `<Esc>` | Limpiar búsqueda resaltada |
@@ -220,6 +222,10 @@ Configs disponibles al continuar: **.NET** "Launch (autodiscover .csproj)" y "At
 | `<leader>as` / `<leader>ad` | Elegir CLI / desconectar sesión |
 | `<leader>at` / `<leader>av` / `<leader>af` | Enviar esto / la selección / el archivo |
 | `<leader>ap` | Elegir prompt (incluye `explain_error`) |
+| (en la ventana del CLI) `<C-q>` | Salir a modo normal (ahí funcionan `<C-w>…`, `q` oculta) |
+| `<C-z>` / `<C-.>` | Volver a la ventana anterior sin cerrar / ocultar el chat |
+| `<C-h>` / `<C-l>` | Saltar a la ventana de al lado (con Shift: redimensionar) |
+| `<C-p>` · `<C-f>` · `<C-b>` | Insertar prompt o contexto · picker de archivos · de buffers |
 
 ## .NET / C# (`<leader>;*`, `<leader>cp*`)
 

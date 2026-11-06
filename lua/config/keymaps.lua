@@ -88,6 +88,18 @@ map("n", "<F11>", "<cmd>DapStepInto<cr>", { desc = "Debug: Step into" })
 map("n", "<S-F11>", "<cmd>DapStepOut<cr>", { desc = "Debug: Step out" })
 
 -- =======================================================================================
+-- Ventanas: redimensionar con Ctrl+Shift+h/j/k/l
+-- =======================================================================================
+-- Los <C-flechas> de LazyVim nunca llegan a Neovim en macOS (Mission Control se los
+-- queda). Ghostty distingue Ctrl+Shift+letra (protocolo kitty). Se mapean también en
+-- modo terminal (<cmd> no sale del modo), así funcionan dentro de Sidekick o una
+-- terminal mientras escribes. Sin Shift (<C-hjkl>) te mueves; con Shift redimensionas.
+-- Alternativa sin remapeo: <C-w><space> (modo hydra) y luego > < + - repetidos.
+for key, cmd in pairs({ h = "vertical resize -3", l = "vertical resize +3", j = "resize -3", k = "resize +3" }) do
+  map({ "n", "t" }, "<C-S-" .. key .. ">", "<cmd>" .. cmd .. "<cr>", { desc = "Ventana: " .. cmd })
+end
+
+-- =======================================================================================
 -- Terminales (Snacks.terminal) — <leader>1/2/3 y <leader>T*
 -- =======================================================================================
 -- Snacks identifica cada terminal por cmd + cwd + env + count (NO por posición), así que:
