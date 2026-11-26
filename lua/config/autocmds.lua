@@ -20,6 +20,35 @@ if vim.api.nvim_ui_send then
   })
 end
 
+-- Windows Terminal no extiende el fondo de las celdas al margen de la ventana:
+-- el borde queda del color del perfil (morado en Ubuntu) alrededor de Neovim.
+-- Aquí Neovim le pasa su fondo a la terminal (OSC 11) y lo restaura al salir
+-- (OSC 111). Solo con WT_SESSION: en Ghostty y Rex el margen ya sigue al tema,
+-- y fijar el fondo ahí falsearía la consulta de FocusGained de arriba.
+if vim.env.WT_SESSION and vim.api.nvim_ui_send then
+  local group = vim.api.nvim_create_augroup("wt_background_sync", { clear = true })
+  local function sync_background()
+    local bg = vim.api.nvim_get_hl(0, { name = "Normal", link = false }).bg
+    if bg then
+      vim.api.nvim_ui_send(string.format("\027]11;#%06x\027\\", bg))
+    end
+  end
+  vim.api.nvim_create_autocmd({ "UIEnter", "ColorScheme" }, {
+    group = group,
+    desc = "Igualar el fondo de Windows Terminal al de Neovim",
+    callback = sync_background,
+  })
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    group = group,
+    desc = "Restaurar el fondo de Windows Terminal",
+    callback = function()
+      vim.api.nvim_ui_send("\027]111\027\\")
+    end,
+  })
+  -- autocmds.lua carga en VeryLazy, después de UIEnter: aplicar ya.
+  sync_background()
+end
+
 -- ── Desactivar spell check en markdown/docs ─────────────────────────────────
 -- LazyVim activa `spell` (en inglés) para markdown/text/gitcommit. En docs
 -- técnicos en español que mezclan nombres de productos (Traefik, CrowdSec...),
