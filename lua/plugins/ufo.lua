@@ -25,8 +25,7 @@ return {
       -- Config del preview window (zK).
       -- Por defecto UFO linkea su Normal al Normal global del editor, así que
       -- el preview queda con el mismo color exacto y se ve "pegado" al fondo.
-      -- Lo apuntamos a NormalFloat (que abajo en config seteamos con un bg
-      -- distinto, Surface0 de catppuccin) para que el float destaque.
+      -- Usar el fondo de Pmenu lo distingue del editor en claro y oscuro.
       preview = {
         win_config = {
           border = "rounded",
@@ -96,20 +95,18 @@ return {
     config = function(_, opts)
       require("ufo").setup(opts)
 
-      -- Highlights del preview de zK con colores que destaquen del editor.
-      -- Catppuccin Mocha:
-      --   #1e1e2e = base (editor normal)
-      --   #313244 = surface0 (un escalón más claro, ideal para "panel")
-      --   #45475a = surface1 (un poco más claro, para CursorLine)
-      --   #585b70 = overlay0 (gris medio, para borders)
-      --   #cdd6f4 = text (texto principal)
+      -- Usar los colores del tema activo también en el preview de zK.
       local function apply_ufo_hl()
-        vim.api.nvim_set_hl(0, "UfoPreviewNormal", { bg = "#313244", fg = "#cdd6f4" })
-        vim.api.nvim_set_hl(0, "UfoPreviewBorder", { bg = "#313244", fg = "#585b70" })
-        vim.api.nvim_set_hl(0, "UfoPreviewCursorLine", { bg = "#45475a" })
-        vim.api.nvim_set_hl(0, "UfoPreviewWinBar", { bg = "#313244", fg = "#cdd6f4", bold = true })
-        vim.api.nvim_set_hl(0, "UfoPreviewSbar", { bg = "#45475a" })
-        vim.api.nvim_set_hl(0, "UfoPreviewThumb", { bg = "#585b70" })
+        for name, source in pairs({
+          UfoPreviewNormal = "Pmenu",
+          UfoPreviewBorder = "FloatBorder",
+          UfoPreviewCursorLine = "CursorLine",
+          UfoPreviewWinBar = "Pmenu",
+          UfoPreviewSbar = "PmenuSbar",
+          UfoPreviewThumb = "PmenuThumb",
+        }) do
+          vim.api.nvim_set_hl(0, name, { link = source })
+        end
       end
       apply_ufo_hl()
       -- Re-aplicar si cambias colorscheme

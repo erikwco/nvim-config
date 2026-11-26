@@ -1,5 +1,5 @@
 -- Supermaven: ghost text. Se restaura si fue el último motor elegido.
--- <leader>uS lo enciende (y apaga NES). <leader>ue cambia de motor.
+-- <leader>uM lo enciende (y apaga NES). <leader>ue cambia de motor.
 -- <Tab> lo resuelve blink (snippet → NES → ghost de Supermaven si está activo).
 
 return {
@@ -24,15 +24,11 @@ return {
       disable_keymaps = true,
       disable_inline_completion = false,
       ignore_filetypes = { "bigfile", "snacks_input", "snacks_notif" },
-      color = {
-        suggestion_color = "#ffffff",
-        cterm = 244,
-      },
       log_level = "info",
     },
     config = function(_, opts)
       require("supermaven-nvim").setup(opts)
-      require("supermaven-nvim.completion_preview").suggestion_group = "SupermavenSuggestion"
+      require("supermaven-nvim.completion_preview").suggestion_group = "Comment"
       -- setup() arranca el binario; lo paramos salvo que el usuario ya haya
       -- elegido supermaven, en esta sesión o en la preferencia guardada.
       if vim.g.ai_engine ~= "supermaven" then

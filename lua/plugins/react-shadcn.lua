@@ -10,8 +10,9 @@ return {
     "ShadcnAddImportant",
   },
 
-  -- Dependencias
-  dependencies = { "nvim-telescope/telescope.nvim" },
+  -- nvim-shadcn exige telescope; queda como dependencia lazy SOLO de este plugin
+  -- (se carga al primer :Shadcn*, no al arranque).
+  dependencies = { { "nvim-telescope/telescope.nvim", lazy = true, dependencies = { "nvim-lua/plenary.nvim" } } },
 
   opts = {
     default_installer = "bun", -- Antes tenías 'npm'

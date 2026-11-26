@@ -8,6 +8,18 @@
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 --
 
+-- Refrescar el fondo al volver a Neovim, incluso si la terminal no notificó
+-- el cambio de tema. nvim_ui_send (0.12+) solo escribe a UIs con un TTY.
+if vim.api.nvim_ui_send then
+  vim.api.nvim_create_autocmd("FocusGained", {
+    group = vim.api.nvim_create_augroup("terminal_background", { clear = true }),
+    desc = "Refresh terminal background color",
+    callback = function()
+      vim.api.nvim_ui_send("\027]11;?\007")
+    end,
+  })
+end
+
 -- ── Desactivar spell check en markdown/docs ─────────────────────────────────
 -- LazyVim activa `spell` (en inglés) para markdown/text/gitcommit. En docs
 -- técnicos en español que mezclan nombres de productos (Traefik, CrowdSec...),
@@ -39,31 +51,10 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- vim.api.nvim_create_autocmd("LspAttach", {
---   callback = function(args)
---     local client = vim.lsp.get_client_by_id(args.data.client_id)
---     if client and client.name == "jdtls" and client.config.root_dir == nil then
---       vim.schedule(function()
---         vim.lsp.stop_client(client.id, true)
---       end)
---     end
---   end,
--- })
-
-local orig_start = vim.lsp.start
-vim.lsp.start = function(config, ...)
-  if
-    config
-    and config.name == "jdtls"
-    and not config.root_dir
-    and config.cmd
-    and type(config.cmd) == "table"
-    and #config.cmd == 1
-  then
-    return nil
-  end
-  return orig_start(config, ...)
-end
+-- jdtls lo arranca nvim-jdtls (plugins/jdtls-lombok.lua). Para que mason-lspconfig
+-- no levante un segundo cliente con la config genérica de lspconfig, el server
+-- se excluye con `setup.jdtls = function() return true end` en ese mismo archivo
+-- (es lo que hace el extra lang.java de LazyVim).
 
 -- =======================================================================================
 -- Preservar la indentación de líneas vacías al presionar Enter o mover el cursor.
@@ -195,5 +186,59 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
         pcall(vim.cmd.loadview, { mods = { emsg_silent = true, silent = true } })
       end
     end, 100)
+  end,
+})
+
+-- =======================================================================================
+-- Diagnósticos "loud" (ver plugins/diagnostics-loud.lua para vim.diagnostic.config)
+-- =======================================================================================
+-- Auto-abrir el float de diagnósticos al reposar 500 ms (updatetime) sobre una
+-- línea con errores. Respeta el toggle por buffer (<leader>ux) y no abre si ya
+-- hay otro float visible.
+vim.api.nvim_create_autocmd("CursorHold", {
+  group = vim.api.nvim_create_augroup("diag_float_on_hold", { clear = true }),
+  callback = function()
+    if not vim.diagnostic.is_enabled({ bufnr = 0 }) then
+      return
+    end
+    local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+    if #vim.diagnostic.get(0, { lnum = line }) == 0 then
+      return
+    end
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      if vim.api.nvim_win_get_config(win).relative ~= "" then
+        return
+      end
+    end
+    vim.diagnostic.open_float(nil, { focus = false, scope = "line", border = "rounded", source = "if_many" })
+  end,
+})
+
+-- Énfasis de diagnósticos con los colores del tema activo (undercurl, negrita en
+-- errores). Se aplica ahora (el tema ya cargó) y en cada cambio de colorscheme.
+local function loud_diagnostic_hl()
+  for _, severity in ipairs({ "Error", "Warn", "Info", "Hint" }) do
+    local color = vim.api.nvim_get_hl(0, { name = "Diagnostic" .. severity, link = false }).fg
+    local bold = severity == "Error"
+    vim.api.nvim_set_hl(0, "DiagnosticUnderline" .. severity, { undercurl = true, sp = color })
+    vim.api.nvim_set_hl(0, "DiagnosticVirtualText" .. severity, { fg = color, bold = bold, italic = true })
+    vim.api.nvim_set_hl(0, "DiagnosticSign" .. severity, { fg = color, bold = bold })
+    vim.api.nvim_set_hl(0, "DiagnosticFloating" .. severity, { fg = color, bold = bold })
+  end
+end
+loud_diagnostic_hl()
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = vim.api.nvim_create_augroup("diag_hl_loud", { clear = true }),
+  callback = loud_diagnostic_hl,
+})
+
+-- =======================================================================================
+-- No autoformatear archivos .env (antes vivía en plugins/conform-env.lua)
+-- =======================================================================================
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  group = vim.api.nvim_create_augroup("no_autoformat_env", { clear = true }),
+  pattern = { "*.env", "*.env.*", ".env.*", ".env" },
+  callback = function()
+    vim.b.autoformat = false
   end,
 })

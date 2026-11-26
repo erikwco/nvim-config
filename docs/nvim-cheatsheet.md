@@ -3,7 +3,7 @@
 > Referencia de mi config LazyVim: LSP, debug, tests, folds, terminales, REST,
 > DB, Flutter, Git (diffview+) y más. Setup base: Roslyn/gopls/JDTLS/dartls/rust-analyzer +
 > easy-dotnet + kulala + vim-dadbod + nvim-ufo + diffview-plus.
-> Última actualización: 2026-10-11.
+> Última actualización: 2026-10-12.
 
 ---
 
@@ -33,6 +33,7 @@
 22. [Convenciones de teclas](#️-convenciones-de-teclas)
 23. [Archivos de configuración](#-archivos-de-configuración)
 24. [Chat con IA (Sidekick)](#chat-con-ia-sidekick)
+25. [Tema claro y oscuro](#tema-claro-y-oscuro)
 
 ---
 
@@ -1486,9 +1487,36 @@ Autenticación: `codex login status` muestra el estado. Si falta la sesión,
 
 El chat usa la herramienta elegida. Las sugerencias dentro del código usan Copilot NES
 o Supermaven, según la elección guardada con `<leader>ue`.
-Activar Supermaven con `<leader>uS` detiene también el servidor de Copilot.
+Activar Supermaven con `<leader>uM` detiene también el servidor de Copilot.
+`<leader>uS` conserva el toggle de Smooth Scroll de LazyVim.
 Activar NES con `<leader>uN` detiene Supermaven y vuelve a iniciar Copilot.
 Al abrir Neovim se restaura esa elección; Copilot solo arranca si NES está activo.
+
+---
+
+## Tema claro y oscuro
+
+Neovim sigue el fondo de la terminal: TokyoNight Day en claro y Moon en oscuro.
+La terminal conserva su propia paleta; este ajuste sincroniza claro/oscuro.
+No hay que fijar `vim.o.background` en la configuración.
+
+- Al abrir Neovim, la detección nativa consulta el fondo de la terminal.
+- Los cambios durante la sesión dependen de los avisos de la terminal.
+- Con Neovim 0.12+, volver a enfocar la ventana consulta otra vez el fondo. Si Rex
+  no avisa de un cambio, cambia a otra app y vuelve a Neovim.
+- `<leader>ub` alterna el fondo manualmente. Es temporal: el siguiente aviso o
+  cambio de foco puede reemplazarlo. Este toggle no se guarda entre sesiones.
+
+Para comprobar el estado actual:
+
+```vim
+:set background?
+:echo g:colors_name
+```
+
+La selección está en `lua/plugins/go-theme.lua`. Se usa `colorscheme = "tokyonight"`
+para respetar el fondo detectado al arrancar. `install.colorscheme` en `lazy.lua`
+solo configura los temas disponibles durante la instalación de plugins.
 
 ---
 

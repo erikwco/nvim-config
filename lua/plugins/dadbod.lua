@@ -1,8 +1,10 @@
 -- Override de la extra `lazyvim.plugins.extras.lang.sql` (vim-dadbod-ui).
 --
 -- Cambios respecto al default:
---   1. La extra usa <leader>D para "Toggle DBUI", pero ese atajo ya es nuestro
---      terminal lateral. Lo movemos a <leader>Q (Q = Query).
+--   1. La extra usa <leader>D para "Toggle DBUI". Lo movemos al grupo <leader>Q*
+--      (Q = Query): <leader>Qq toggle, Qa add, Qf find, Qr rename, Ql last query.
+--      El toggle no es <leader>Q a secas para que la tecla no sea atajo y prefijo
+--      a la vez (which-key quedaba ambiguo y esperaba timeoutlen).
 --   2. Desactivamos nvim-notify (no lo tienes instalado; Snacks intercepta vim.notify).
 --   3. Pre-configuramos conexiones via vim.g.dbs (puedes sobreescribirlas en cada
 --      proyecto con un `.lazy.lua` local, ver ejemplo abajo).
@@ -29,7 +31,7 @@
 --      return {}
 --    Más detalles: https://www.lazyvim.org/configuration/lazy.nvim
 --
--- También puedes añadir conexiones desde la UI (`<leader>Q` → `A` o
+-- También puedes añadir conexiones desde la UI (`<leader>Qq` → `A` o
 -- `:DBUIAddConnection`); se guardan en ~/.local/share/nvim/dadbod_ui/.
 
 vim.g.dbs = vim.g.dbs or {
@@ -40,7 +42,7 @@ vim.g.dbs = vim.g.dbs or {
 }
 
 return {
-  -- Override de keymap: <leader>D ya es terminal lateral, movemos DBUI a <leader>Q.
+  -- Override de keymap: DBUI pasa de <leader>D al grupo <leader>Q*.
   {
     "kristijanhusak/vim-dadbod-ui",
     keys = function(_, keys)
@@ -53,7 +55,7 @@ return {
       end
       -- Añade nuestros propios atajos bajo <leader>Q*
       vim.list_extend(filtered, {
-        { "<leader>Q", "<cmd>DBUIToggle<CR>", desc = "Toggle DBUI (Query)" },
+        { "<leader>Qq", "<cmd>DBUIToggle<CR>", desc = "Toggle DBUI (Query)" },
         { "<leader>Qa", "<cmd>DBUIAddConnection<CR>", desc = "DBUI: Add connection" },
         { "<leader>Qf", "<cmd>DBUIFindBuffer<CR>", desc = "DBUI: Find buffer" },
         { "<leader>Qr", "<cmd>DBUIRenameBuffer<CR>", desc = "DBUI: Rename buffer" },

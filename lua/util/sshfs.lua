@@ -7,11 +7,12 @@
 -- pero entiende los mounts de fuse-t. Sin depender de macFUSE.
 --
 -- Uso: require("util.sshfs").setup()  (se llama desde config/keymaps.lua)
--- Keymaps bajo <leader>S* (evita el <leader>m* de Maven).
+-- Keymaps bajo <leader>M* (M de Mount; <leader>S es "Select Scratch Buffer" en LazyVim).
 
 local M = {}
 
 local base_dir = vim.fn.expand("~/mnt")
+local pending_mounts = {}
 
 -- Rutas remotas predefinidas por host (para no escribirlas cada vez).
 -- Se cargan desde un archivo LOCAL gitignoreado (util/sshfs_hosts.lua) para no
@@ -32,7 +33,7 @@ end
 local function choose_path(host, cb)
   local preset = host_paths[host]
   if preset == nil then
-    vim.ui.input({ prompt = "Ruta remota (default = home): ", default = "." }, function(p)
+    vim.ui.input({ prompt = "Ruta remota (. = carpeta personal; ej. projects/site): ", default = "." }, function(p)
       if p then
         cb(p == "" and "." or p)
       end
@@ -154,67 +155,155 @@ function M.mount()
       return
     end
     choose_path(host, function(remote_path)
-      if not remote_path then
+      if type(remote_path) ~= "string" or remote_path:find("%c") then
+        vim.notify("Ruta remota inválida para " .. host .. ": no se permiten caracteres de control", vim.log.levels.ERROR)
         return
       end
       local mnt = base_dir .. "/" .. host
-      vim.fn.mkdir(mnt, "p") -- la carpeta debe pre-existir
-      local socket = socket_for(host)
-
-      -- Paso 2: montar reusando el socket maestro (sin password, se detacha bien)
-      local function do_sshfs()
-        local cmd = {
-          sshfs_bin(),
-          host .. ":" .. remote_path,
-          mnt,
-          "-o",
-          "reconnect,ServerAliveInterval=15,ServerAliveCountMax=3,compression=yes,ssh_command=ssh -S "
-            .. socket,
-        }
-        local out = vim.fn.system(cmd)
-        if vim.v.shell_error ~= 0 then
-          vim.notify("sshfs falló:\n" .. out, vim.log.levels.ERROR)
-          pcall(vim.fn.delete, mnt, "d")
-          return
-        end
-        vim.notify("✓ Montado en " .. mnt, vim.log.levels.INFO)
-        M.explore_path(mnt)
-      end
-
-      -- ¿Ya hay conexión maestra viva? → montar directo (sin re-pedir password)
-      vim.fn.system({ "ssh", "-S", socket, "-O", "check", host })
-      if vim.v.shell_error == 0 then
-        do_sshfs()
+      local target = host .. ":" .. remote_path
+      if pending_mounts[mnt] then
+        vim.notify("Ya hay un montaje en curso para " .. mnt, vim.log.levels.WARN)
         return
       end
+      for _, mount in ipairs(active_mounts()) do
+        if mount.path == mnt then
+          vim.notify("Ya está montado " .. mnt .. ". Desmóntalo antes de montar otra ruta.", vim.log.levels.WARN)
+          return
+        end
+      end
+      pending_mounts[mnt] = true
+      local socket = socket_for(host)
 
-      -- Paso 1: abrir la conexión maestra en terminal (password interactivo)
-      vim.notify("Conectando a " .. host .. " — escribe el password si lo pide", vim.log.levels.INFO)
-      vim.cmd("botright 12new")
-      local term_win = vim.api.nvim_get_current_win()
-      vim.fn.jobstart(
-        { "ssh", "-M", "-S", socket, "-o", "ControlPersist=600", "-N", "-f", host },
-        {
-          term = true,
-          on_exit = function(_, code)
-            vim.schedule(function()
-              if vim.api.nvim_win_is_valid(term_win) then
-                vim.api.nvim_win_close(term_win, true)
-              end
-              if code == 0 then
-                do_sshfs()
-              else
-                vim.notify(
-                  "SSH falló (código " .. code .. "). Revisa el password o la conexión (¿VPN?).",
-                  vim.log.levels.WARN
-                )
-                pcall(vim.fn.delete, mnt, "d")
-              end
-            end)
-          end,
-        }
-      )
-      vim.cmd("startinsert") -- para teclear el password
+      local function fail(message)
+        pending_mounts[mnt] = nil
+        vim.notify(target .. "\n" .. message, vim.log.levels.ERROR)
+      end
+
+      local function run(cmd, opts, cb)
+        local output = {}
+        local finished, timed_out = false, false
+        local timer
+        local function on_exit(_, code)
+          if finished then
+            return
+          end
+          finished = true
+          if timer and not timer:is_closing() then
+            timer:stop()
+            timer:close()
+          end
+          vim.schedule(function()
+            if opts.win and vim.api.nvim_win_is_valid(opts.win) and vim.api.nvim_win_get_buf(opts.win) == opts.buf then
+              vim.api.nvim_win_close(opts.win, true)
+            end
+            if timed_out then
+              pending_mounts[mnt] = nil
+              return
+            end
+            cb(code, table.concat(output))
+          end)
+        end
+        local job_opts = { term = opts.win ~= nil, on_exit = on_exit }
+        if not opts.win then
+          local function collect(_, data)
+            output[#output + 1] = table.concat(data, "\n")
+          end
+          job_opts.on_stdout = collect
+          job_opts.on_stderr = collect
+          job_opts.stdin = opts.input and "pipe" or "null"
+        end
+        local ok, job = pcall(vim.fn.jobstart, cmd, job_opts)
+        if not ok or job <= 0 then
+          output[#output + 1] = "No se pudo iniciar el proceso: " .. tostring(job)
+          on_exit(nil, -1)
+          return
+        end
+        timer = vim.defer_fn(function()
+          if finished then
+            return
+          end
+          timed_out = true
+          vim.fn.jobstop(job)
+          -- El bloqueo se libera al salir el proceso, no al solicitar su parada.
+          vim.notify(
+            target .. "\nTiempo de espera agotado al " .. opts.label .. ". Se está deteniendo el proceso.",
+            vim.log.levels.ERROR
+          )
+        end, opts.timeout)
+        if opts.input then
+          vim.fn.chansend(job, opts.input)
+          vim.fn.chanclose(job, "stdin")
+        end
+      end
+
+      local function do_sshfs()
+        vim.fn.mkdir(mnt, "p")
+        run({
+          sshfs_bin(),
+          target,
+          mnt,
+          "-o",
+          "reconnect,ServerAliveInterval=15,ServerAliveCountMax=3,compression=yes,BatchMode=yes,ConnectTimeout=10,ssh_command=ssh -S "
+            .. vim.fn.shellescape(socket),
+        }, { label = "montar con SSHFS", timeout = 20000 }, function(code, out)
+          if code ~= 0 then
+            fail("SSHFS falló (código " .. code .. "):\n" .. out)
+            return
+          end
+          pending_mounts[mnt] = nil
+          vim.notify("✓ Montado en " .. mnt, vim.log.levels.INFO)
+          M.explore_path(mnt)
+        end)
+      end
+
+      local function check_path()
+        local quoted_path = remote_path:gsub('[\\"]', "\\%0")
+        run({
+          "sftp", "-b", "-",
+          "-o", "ControlPath=" .. socket,
+          "-o", "BatchMode=yes",
+          "-o", "ConnectTimeout=10",
+          host,
+        }, {
+          input = 'cd "' .. quoted_path .. '"\npwd\n',
+          label = "comprobar la carpeta remota",
+          timeout = 15000,
+        }, function(code, out)
+          if code ~= 0 then
+            fail("No se pudo acceder a la carpeta remota por SFTP:\n" .. out)
+            return
+          end
+          do_sshfs()
+        end)
+      end
+
+      run({ "ssh", "-S", socket, "-O", "check", host }, {
+        label = "comprobar la conexión SSH",
+        timeout = 10000,
+      }, function(code)
+        if code == 0 then
+          check_path()
+          return
+        end
+
+        vim.notify("Conectando a " .. host .. " — escribe el password si lo pide", vim.log.levels.INFO)
+        vim.cmd("botright 12new")
+        local term_win = vim.api.nvim_get_current_win()
+        local term_buf = vim.api.nvim_get_current_buf()
+        run({
+          "ssh", "-M", "-S", socket,
+          "-o", "ControlPersist=600",
+          "-o", "ConnectTimeout=10",
+          "-N", "-f", host,
+        }, { win = term_win, buf = term_buf, label = "autenticar con SSH", timeout = 120000 }, function(auth_code)
+          if auth_code == 0 then
+            check_path()
+          else
+            fail("SSH falló (código " .. auth_code .. "). Revisa el password o la conexión (¿VPN?).")
+          end
+        end)
+        vim.cmd("startinsert")
+      end)
     end)
   end)
 end
@@ -322,14 +411,14 @@ end
 -- ── Setup: keymaps + auto-unmount al salir ──────────────────────────────────
 function M.setup()
   local map = vim.keymap.set
-  map("n", "<leader>Sm", M.mount, { desc = "SSHFS: montar host" })
-  map("n", "<leader>Se", M.explore, { desc = "SSHFS: explorar mount" })
-  map("n", "<leader>Sf", M.find_files, { desc = "SSHFS: buscar archivos" })
-  map("n", "<leader>Su", M.unmount, { desc = "SSHFS: desmontar" })
-  map("n", "<leader>SU", function()
+  map("n", "<leader>Mm", M.mount, { desc = "SSHFS: montar host" })
+  map("n", "<leader>Me", M.explore, { desc = "SSHFS: explorar mount" })
+  map("n", "<leader>Mf", M.find_files, { desc = "SSHFS: buscar archivos" })
+  map("n", "<leader>Mu", M.unmount, { desc = "SSHFS: desmontar" })
+  map("n", "<leader>MU", function()
     M.unmount_all(false)
   end, { desc = "SSHFS: desmontar todo" })
-  map("n", "<leader>Sc", "<cmd>edit ~/.ssh/config<cr>", { desc = "SSHFS: editar ssh config" })
+  map("n", "<leader>Mc", "<cmd>edit ~/.ssh/config<cr>", { desc = "SSHFS: editar ssh config" })
 
   -- Desmontar todo al salir de nvim (evita mounts colgados)
   vim.api.nvim_create_autocmd("VimLeavePre", {

@@ -1,15 +1,9 @@
 -- Options are automatically loaded before lazy.nvim startup
 -- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
 -- Add any additional options here
--- Mantener el fondo sólido del colorscheme (catppuccin-mocha: #1e1e2e).
--- Antes había un autocmd que ponía `Normal guibg=NONE` para hacer transparente
--- el editor y que se mezclara con el terminal, pero eso causaba que:
---   * El editor se viera del color del terminal (gris en tu caso)
---   * Los floats de UFO peek (zK) usaran ese Normal transparente → ilegibles
--- Quitándolo, vuelve el dark blue de catppuccin a todo: editor, sidebar, floats.
---
--- Si en algún momento quieres recuperar transparencia (raro), descomenta esta línea:
--- vim.api.nvim_set_hl(0, "Normal", { bg = "none", ctermbg = "none" })
+-- TokyoNight alterna Day/Moon según el fondo que detecta Neovim en la terminal.
+-- No fijar `background`: desactiva la detección automática al arrancar.
+-- Conservar fondos sólidos mantiene legibles el editor y los floats de UFO.
 
 -- =======================================================================================
 -- Folds (plegado de código)
@@ -114,17 +108,9 @@ vim.api.nvim_create_autocmd("FileType", {
 -- Ver `:h cpo-I` para detalles.
 vim.opt.cpoptions:append("I")
 
--- Bonus: evita que InsertLeave (Esc al salir del modo insert) recorte espacios
--- en blanco al final de la línea actual. Esto previene perder la indentación
--- de la línea donde estabas escribiendo si sales sin teclear contenido.
--- (LazyVim no recorta por defecto, pero por si acaso algún plugin lo hace.)
-vim.api.nvim_create_autocmd("InsertLeavePre", {
-  callback = function()
-    -- No-op intencional: solo nos aseguramos de no tener ningún autocmd previo
-    -- borrando whitespace. Si en el futuro instalas algo tipo `mini.trailspace`
-    -- con auto-trim, configúralo con `only_modified = true` o quita ese plugin.
-  end,
-})
+-- CursorHold cada 500 ms (default 4000): lo usa el float automático de
+-- diagnósticos (ver autocmds.lua, grupo diag_float_on_hold).
+vim.opt.updatetime = 500
 
 -- =======================================================================================
 -- Encoding / charset — detección automática de archivos legacy
@@ -145,9 +131,23 @@ vim.opt.fileencodings = { "ucs-bom", "utf-8", "cp1252", "latin1" }
 --vim.lsp.handlers["textDocument/inlayHint"] = function() end
 
 -- =======================================================================================
+-- .NET: usar la instalación oficial de Microsoft antes que la de Homebrew
+-- =======================================================================================
+-- Homebrew instala `dotnet` como dependencia de otras fórmulas (powershell) y su
+-- `/opt/homebrew/bin/dotnet` gana en el PATH. Trae un solo SDK y un solo runtime,
+-- y es un script que envuelve al binario real: MSBuildLocator busca los SDK junto
+-- a ese script, no encuentra ninguno y easy-dotnet falla al arrancar con
+-- "No .NET SDKs were found". Los SDK y runtimes de los proyectos (8, 9, 10) están
+-- en la instalación oficial, así que va primero para todo lo que Neovim lance.
+local dotnet_oficial = "/usr/local/share/dotnet"
+if vim.uv.fs_stat(dotnet_oficial .. "/dotnet") then
+  vim.env.PATH = dotnet_oficial .. ":" .. vim.env.PATH
+end
+
+-- =======================================================================================
 -- AI completion: recordar la última elección; NES si aún no hay preferencia.
 --   <leader>uN  toggle NES (activar NES apaga Supermaven)
---   <leader>uS  toggle Supermaven (activar Supermaven apaga NES)
+--   <leader>uM  toggle Supermaven (activar Supermaven apaga NES)
 --   <leader>ue  cambiar de motor (NES ↔ Supermaven)
 -- =======================================================================================
 vim.g.ai_engine = require("util.ai_engine").load()

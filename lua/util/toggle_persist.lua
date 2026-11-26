@@ -6,6 +6,7 @@ local M = {}
 local path = vim.fn.stdpath("state") .. "/ui-toggles.json"
 
 local skip = {
+  background = true, -- Lo detecta Neovim desde la terminal en cada sesión.
   zen = true,
   zoom = true,
   profiler = true,

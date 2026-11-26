@@ -4,6 +4,63 @@
 -- Extra LazyVim `ai.sidekick` instala el plugin; aquí solo lo afinamos.
 -- No activar `ai.copilot` (copilot.lua): apaga el LSP oficial que NES necesita.
 
+-- Con el foco en el chat, un clic en una pestaña de bufferline o un `:e`
+-- abren el archivo en la ventana del chat y tapan la CLI. Aquí el archivo se
+-- pasa a una ventana de edición y la CLI vuelve a la suya. Solo se mueven
+-- buffers de archivo: el scrollback de sidekick usa esa misma ventana.
+---@param terminal sidekick.cli.Terminal
+local function keep_cli_in_its_window(terminal)
+  local function intruder()
+    if not (terminal:win_valid() and terminal:buf_valid()) then
+      return
+    end
+    local buf = vim.api.nvim_win_get_buf(terminal.win)
+    if buf ~= terminal.buf and vim.bo[buf].buftype == "" then
+      return buf
+    end
+  end
+
+  local function is_editor(win)
+    return win ~= terminal.win
+      and vim.api.nvim_win_get_config(win).zindex == nil
+      and vim.bo[vim.api.nvim_win_get_buf(win)].buftype == ""
+  end
+
+  local function move_out()
+    local buf = intruder()
+    if not buf then
+      return
+    end
+    -- La última ventana usada primero: con varios splits es la esperada.
+    local wins = vim.api.nvim_tabpage_list_wins(0)
+    table.insert(wins, 1, vim.fn.win_getid(vim.fn.winnr("#")))
+    local editor = vim.tbl_filter(is_editor, wins)[1]
+
+    vim.api.nvim_win_set_buf(terminal.win, terminal.buf)
+    terminal:wo()
+    if editor then
+      vim.api.nvim_win_set_buf(editor, buf)
+      vim.api.nvim_set_current_win(editor)
+    else
+      vim.api.nvim_open_win(buf, true, { split = "left", win = -1 })
+    end
+    vim.cmd.stopinsert()
+    -- Sidekick anotó "modo normal" al salir del chat: al volver, se escribe.
+    terminal.normal_mode = false
+  end
+
+  vim.api.nvim_create_autocmd("BufWinEnter", {
+    group = terminal.group,
+    callback = function()
+      -- `:buffer` sigue tocando la ventana y el foco después de este evento:
+      -- el intercambio se hace cuando el comando ya terminó.
+      if intruder() then
+        vim.schedule(move_out)
+      end
+    end,
+  })
+end
+
 return {
   {
     "mason-org/mason.nvim",
@@ -66,6 +123,7 @@ return {
       opts.cli = opts.cli or {}
       opts.cli.win = vim.tbl_deep_extend("force", opts.cli.win or {}, {
         layout = "right",
+        config = keep_cli_in_its_window,
       })
       opts.cli.prompts = vim.tbl_extend("force", opts.cli.prompts or {}, {
         explain_error = table.concat({
@@ -113,7 +171,7 @@ return {
           set = function(state)
             require("util.ai_engine").set_supermaven(state)
           end,
-        }):map("<leader>uS")
+        }):map("<leader>uM")
       end)
 
       return opts
@@ -126,20 +184,9 @@ return {
         require("util.ai_engine").restore()
       end)
     end,
+    -- <tab> (NES jump/apply) y <leader>uN los mapea el extra; <leader>uM/uN se
+    -- redefinen arriba como Snacks.toggle para que NES y Supermaven no convivan.
     keys = {
-      {
-        "<tab>",
-        function()
-          if require("sidekick").nes_jump_or_apply() then
-            return ""
-          end
-          return "<Tab>"
-        end,
-        mode = { "n" },
-        expr = true,
-        silent = true,
-        desc = "NES jump / apply",
-      },
       {
         "<leader>ac",
         function()
@@ -163,14 +210,6 @@ return {
         end,
         desc = "Sidekick Grok",
         mode = { "n", "v" },
-      },
-      {
-        "<leader>uS",
-        function()
-          local engine = require("util.ai_engine")
-          engine.set_supermaven(not engine.supermaven_running())
-        end,
-        desc = "Toggle Supermaven",
       },
       {
         "<leader>ue",

@@ -1,3 +1,8 @@
+-- Elixir: elixir-ls, treesitter, mix como formatter, neotest-elixir y DAP.
+-- No se usa el extra `lang.elixir` de LazyVim a propósito: su spec de nvim-lint
+-- hace `opts.linters_by_ft = { elixir = { "credo" } }` (reemplaza en vez de
+-- mezclar) y borra los linters de los extras que cargan antes (hadolint de
+-- lang.docker, por ejemplo). Este archivo cubre lo mismo sin ese efecto.
 return {
   {
     "neovim/nvim-lspconfig",
@@ -29,15 +34,12 @@ return {
   {
     "nvim-neotest/neotest",
     dependencies = { "jfpedroza/neotest-elixir" },
-    opts = function(_, opts)
-      opts.adapters = opts.adapters or {}
-      table.insert(opts.adapters, require("neotest-elixir"))
-    end,
+    opts = { adapters = { ["neotest-elixir"] = {} } },
   },
   {
     "mfussenegger/nvim-dap",
     opts = function()
-      -- debug.lua configura DAP; aquí registramos solo el adaptador de Elixir.
+      -- La base de DAP la pone el extra dap.core; aquí solo el adaptador de Elixir.
       local dap = require("dap")
       dap.adapters.mix_task = {
         type = "executable",
