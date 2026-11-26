@@ -131,6 +131,20 @@ vim.opt.fileencodings = { "ucs-bom", "utf-8", "cp1252", "latin1" }
 --vim.lsp.handlers["textDocument/inlayHint"] = function() end
 
 -- =======================================================================================
+-- .NET: usar la instalación oficial de Microsoft antes que la de Homebrew
+-- =======================================================================================
+-- Homebrew instala `dotnet` como dependencia de otras fórmulas (powershell) y su
+-- `/opt/homebrew/bin/dotnet` gana en el PATH. Trae un solo SDK y un solo runtime,
+-- y es un script que envuelve al binario real: MSBuildLocator busca los SDK junto
+-- a ese script, no encuentra ninguno y easy-dotnet falla al arrancar con
+-- "No .NET SDKs were found". Los SDK y runtimes de los proyectos (8, 9, 10) están
+-- en la instalación oficial, así que va primero para todo lo que Neovim lance.
+local dotnet_oficial = "/usr/local/share/dotnet"
+if vim.uv.fs_stat(dotnet_oficial .. "/dotnet") then
+  vim.env.PATH = dotnet_oficial .. ":" .. vim.env.PATH
+end
+
+-- =======================================================================================
 -- AI completion: recordar la última elección; NES si aún no hay preferencia.
 --   <leader>uN  toggle NES (activar NES apaga Supermaven)
 --   <leader>uM  toggle Supermaven (activar Supermaven apaga NES)
